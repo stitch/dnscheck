@@ -5,14 +5,16 @@
 require 5.008;
 use warnings;
 use strict;
+use lib "t/lib";
 
 use Test::More tests => 8;
 
+use MockResolver 'find_parent';
 use DNSCheck;
 
 ######################################################################
 
-my $check = new DNSCheck;
+my $check = new DNSCheck({configdir => './t/config'});
 my $dns   = $check->dns;
 
 ######################################################################

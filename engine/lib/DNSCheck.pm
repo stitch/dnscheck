@@ -37,6 +37,7 @@ use strict;
 use DBI;
 use Carp;
 use List::Util qw[reduce max min];
+use Net::DNS;
 use Storable qw[thaw];
 use MIME::Base64;
 
@@ -58,7 +59,7 @@ use DNSCheck::Lookup::Resolver;
 use DNSCheck::Lookup::ASN;
 use DNSCheck::Logger;
 
-our $VERSION = "1.2.4";
+our $VERSION = "1.3.0";
 
 ######################################################################
 
@@ -141,6 +142,22 @@ sub add_fake_glue {
     return 1;
 }
 
+sub add_fake_ds {
+    my $self = shift;
+    my $data = shift;
+
+    my $ds = Net::DNS::RR->new($data);
+    unless ($ds and $ds->type eq 'DS') {
+        carp "Malformed DS data (no fake record added): $data";
+        return;
+    }
+
+    $self->resolver->add_fake_ds($ds);
+    $self->{faked} = 1;
+
+    return 1;
+}
+
 sub undelegated_test {
     my $self = shift;
 
@@ -194,15 +211,6 @@ sub config {
     return $self->{config};
 }
 
-sub locale {
-    my $self = shift;
-
-    unless (defined($self->{locale})) {
-        $self->{locale} = DNSCheck::Locale->new($self->config->get("locale"));
-    }
-    return $self->{locale};
-}
-
 sub dbh {
     my $self  = shift;
     my $tries = 0;
@@ -214,6 +222,9 @@ sub dbh {
 
     unless (defined($self->{"dbh"}) && $self->{"dbh"}->ping) {
         until (defined($dbh) or ($tries > 5)) {
+            # We don't care if config variables are unset. Just try to
+            # connect using what we were given and see if it works.
+            no warnings 'uninitialized';
             $tries += 1;
             my $conf = $self->config->get("dbi");
             my $dsn  = sprintf("DBI:mysql:database=%s;hostname=%s;port=%s",
@@ -438,6 +449,10 @@ Return the logger object. It is of type L<DNSCheck::Logger>.
 
 Return the DNS lookup object. It is of type L<DNSCeck::Lookup::DNS>.
 
+=item ->resolver()
+
+Returns the actual recursing resolver object.
+
 =item ->asn()
 
 Return the ASN lookup object. It is of type L<DNSCheck::Lookup::ASN>.
@@ -472,6 +487,12 @@ for the name will be made. If that attempt fails, the name will be ignored.
 =item ->undelegated_test()
 
 This method returns true of any "fake" glue information has been provided.
+
+=item ->log_nameserver_times($zone)
+
+Extracts response timing data for the given zone's nameservers from the 
+resolver object and adds the information as log messages. Has to be called 
+after a test is run, since before there is obviously no data to extract.
 
 =item ->zone()
 

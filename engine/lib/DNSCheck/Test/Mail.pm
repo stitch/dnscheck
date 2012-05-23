@@ -46,7 +46,7 @@ sub test {
     my $email  = shift;
     my $zone   = shift;
 
-    return unless $parent->config->should_run;
+    return 0 unless $parent->config->should_run;
 
     my $logger              = $parent->logger;
     my $errors              = 0;
@@ -175,7 +175,7 @@ Mail for the email address must be deliverable via SMTP.
 
 =head1 METHODS
 
-test(I<emailaddress>, [I<zone>]);
+=head2 test(I<emailaddress>, [I<zone>]);
 
 =head1 EXAMPLES
 

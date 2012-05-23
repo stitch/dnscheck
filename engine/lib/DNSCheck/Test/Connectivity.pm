@@ -47,7 +47,7 @@ sub test {
     my $qclass = $self->qclass;
     my $logger = $self->logger;
 
-    return unless $parent->config->should_run;
+    return 0 unless $parent->config->should_run;
 
     $logger->module_stack_push();
     $logger->auto("CONNECTIVITY:BEGIN", $zone);
@@ -192,6 +192,14 @@ Domain name servers should live in more than one AS.
 =over
 
 =item ->test($zonename);
+
+=item ->test_v4($zonename)
+
+Test specifically for IPv4.
+
+=item ->test_v6($zonename)
+
+Test specifically for IPv6.
 
 =back
 
