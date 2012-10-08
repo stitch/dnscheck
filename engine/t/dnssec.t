@@ -30,7 +30,6 @@ my @check_for = qw[
     DNSKEY_SIGNATURE_OK
     DNSKEY_NO_VALID_SIGNATURES
     SOA_SIGNATURE_OK
-    SOA_VALID_SIGNATURES
 ];
 
 foreach my $m (@check_for) {

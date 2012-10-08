@@ -1,0 +1,10 @@
+From a freshly installed and updated Ubuntu Server 12.04:
+
+1) Somehow acquire DNSCheck source code.
+
+2) Install dpkg-dev debhelper libcrypt-openssl-random-perl libdbd-mysql-perl libdbi-perl libdigest-bubblebabble-perl libdigest-sha-perl libio-socket-inet6-perl libmail-rfc822-address-perl libmime-base32-perl libmime-lite-perl libnet-dns-perl libnet-dns-sec-perl libnet-ip-perl libsocket6-perl libtext-template-perl libyaml-libyaml-perl libconfig-any-perl libfile-sharedir-perl libfile-sharedir-install-perl libyaml-perl libfile-slurp-perl
+
+3) Go into the 'engine' subdirectory of the DNSCheck source code.
+
+4) Run dpkg-buildpackage
+
