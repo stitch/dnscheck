@@ -59,7 +59,7 @@ use DNSCheck::Lookup::Resolver;
 use DNSCheck::Lookup::ASN;
 use DNSCheck::Logger;
 
-our $VERSION = "1.3.0";
+our $VERSION = "1.4.0";
 
 ######################################################################
 
@@ -123,21 +123,21 @@ sub add_fake_glue {
     my $ns_name = shift;
     my $ns_ip   = shift;
 
+    $self->{faked} = 1;
+
     unless (defined($ns_ip)) {
         my @ip = $self->dns->find_addresses($ns_name, 'IN');
         if (@ip == 0) {
-            $self->logger->auto("FAKEGLUE:NO_ADDRESS");
+            $self->logger->auto("FAKEGLUE:NO_ADDRESS", $ns_name);
             return;
         } else {
             $self->resolver->add_fake_glue($zone, $ns_name, $_) for @ip;
         }
     } else {
         unless ($self->resolver->add_fake_glue($zone, $ns_name, $ns_ip)) {
-            $self->logger->auto('FAKEGLUE:BROKEN_INFO', $ns_name, $ns_ip);
+            $self->logger->auto('FAKEGLUE:BROKEN_INFO', $ns_ip, $ns_name);
         }
     }
-
-    $self->{faked} = 1;
 
     return 1;
 }
@@ -146,14 +146,15 @@ sub add_fake_ds {
     my $self = shift;
     my $data = shift;
 
+    $self->{faked} = 1;
+
     my $ds = Net::DNS::RR->new($data);
     unless ($ds and $ds->type eq 'DS') {
-        carp "Malformed DS data (no fake record added): $data";
+        $self->logger->auto('FAKEGLUE:MALFORMED_DS', $data);
         return;
     }
 
     $self->resolver->add_fake_ds($ds);
-    $self->{faked} = 1;
 
     return 1;
 }
