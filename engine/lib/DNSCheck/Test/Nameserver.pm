@@ -43,8 +43,8 @@ use Net::IP 1.25 qw(ip_get_version);
 sub test {
     my $self       = shift;
     my $parent     = $self->parent;
-    my $zone       = shift || $self->zone;
-    my $nameserver = shift || $self->ns;
+    my $zone       = shift // $self->zone;
+    my $nameserver = shift // $self->ns;
 
     return 0 unless $parent->config->should_run;
 
@@ -211,7 +211,7 @@ sub ns {
 sub ns_check_id {
     my $self       = shift;
     my $address    = shift;
-    my $nameserver = shift || $self->ns;
+    my $nameserver = shift // $self->ns;
 
     return 0 unless $self->parent->config->should_run;
 
@@ -244,7 +244,7 @@ sub ns_check_id {
 sub ns_recursive {
     my $self       = shift;
     my $address    = shift;
-    my $nameserver = shift || $self->ns;
+    my $nameserver = shift // $self->ns;
 
     return 0 unless $self->parent->config->should_run;
 
@@ -262,8 +262,8 @@ sub ns_recursive {
 sub ns_authoritative {
     my $self       = shift;
     my $address    = shift;
-    my $nameserver = shift || $self->ns;
-    my $zone       = shift || $self->zone;
+    my $nameserver = shift // $self->ns;
+    my $zone       = shift // $self->zone;
 
     return 0 unless $self->parent->config->should_run;
 
@@ -287,8 +287,8 @@ sub ns_authoritative {
 sub ns_udp {
     my $self       = shift;
     my $address    = shift;
-    my $nameserver = shift || $self->ns;
-    my $zone       = shift || $self->zone;
+    my $nameserver = shift // $self->ns;
+    my $zone       = shift // $self->zone;
 
     return 0 unless $self->parent->config->should_run;
 
@@ -308,8 +308,8 @@ sub ns_udp {
 sub ns_tcp {
     my $self       = shift;
     my $address    = shift;
-    my $nameserver = shift || $self->ns;
-    my $zone       = shift || $self->zone;
+    my $nameserver = shift // $self->ns;
+    my $zone       = shift // $self->zone;
 
     return 0 unless $self->parent->config->should_run;
 
@@ -329,8 +329,8 @@ sub ns_tcp {
 sub ns_axfr {
     my $self       = shift;
     my $address    = shift;
-    my $nameserver = shift || $self->ns;
-    my $zone       = shift || $self->zone;
+    my $nameserver = shift // $self->ns;
+    my $zone       = shift // $self->zone;
 
     return 0 unless $self->parent->config->should_run;
 

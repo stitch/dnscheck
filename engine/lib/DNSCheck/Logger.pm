@@ -77,7 +77,7 @@ sub new {
 
     $self->{start} = time;
 
-    $self->{filters} = ( $config->get( 'filters' ) ) || {};
+    $self->{filters} = ( $config->get( 'filters' ) ) // {};
 
     bless $self, $class;
 }

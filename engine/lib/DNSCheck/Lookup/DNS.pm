@@ -694,7 +694,7 @@ sub _find_parent_helper {
     my ($first, $second) = $self->{resolver}->trace($qname);
     if($first) {
         if ($first eq $qname or $first . '.' eq $qname) {
-            $parent = $second || '';
+            $parent = $second // '';
         } else {
             $parent = $first;
         }
@@ -884,7 +884,7 @@ sub check_axfr {
     my $timeout;
 
     eval {$timeout = $self->parent->config->get('dns')->{tcp_timeout}};
-    $timeout ||= 60;
+    $timeout //= 60;
 
     unless ($self->_querible($address)) {
         return 0;

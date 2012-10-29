@@ -107,7 +107,7 @@ sub logger {
 sub times {
     my $self = shift;
 
-    $self->{times} ||= {};
+    $self->{times} //= {};
     return $self->{times};
 }
 
@@ -459,8 +459,8 @@ sub names_to_ips {
 sub get {
     my $self  = shift;
     my $name  = shift;
-    my $type  = shift || 'NS';
-    my $class = shift || 'IN';
+    my $type  = shift // 'NS';
+    my $class = shift // 'IN';
     my @ns    = @_;
 
     print STDERR "get: $name $type $class @ns " . ( caller( 1 ) )[3] . "\n"
@@ -528,9 +528,9 @@ sub trace {
 
 sub recurse {
     my ( $self, $name, $type, $class, $cnames ) = @_;
-    $type   ||= 'NS';
-    $class  ||= 'IN';
-    $cnames ||= {};
+    $type   //= 'NS';
+    $class  //= 'IN';
+    $cnames //= {};
 
     print STDERR "recurse: $name $type $class\n" if $self->{debug};
 
