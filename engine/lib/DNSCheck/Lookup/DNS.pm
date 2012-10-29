@@ -34,7 +34,6 @@ use strict;
 use warnings;
 require 5.010001;
 
-use List::Util 'shuffle';
 use Carp;
 
 use Data::Dumper;
@@ -236,8 +235,8 @@ sub query_parent_nocache {
         return;
     }
 
-    # randomize name server addresses
-    @target = shuffle(@target);
+    # Order name server addresses
+    @target = sort @target;
 
     return $self->_query_multiple($qname, $qclass, $qtype, $flags, @target);
 }
@@ -405,7 +404,7 @@ sub _query_multiple {
     my $qclass = shift;
     my $qtype  = shift;
     my $flags  = shift;
-    my @target = @_;
+    my @target = sort @_;
 
     # set up resolver
     my $resolver = $self->_setup_resolver($flags);
@@ -659,8 +658,8 @@ sub _init_nameservers_helper {
     }
 
   DONE:
-    $self->{nameservers}{$qname}{$qclass}{ipv4} = [keys %nsv4];
-    $self->{nameservers}{$qname}{$qclass}{ipv6} = [keys %nsv6]
+    $self->{nameservers}{$qname}{$qclass}{ipv4} = [sort keys %nsv4];
+    $self->{nameservers}{$qname}{$qclass}{ipv6} = [sort keys %nsv6]
       if (keys %nsv6) > 0;
     $self->logger->auto("DNS:NAMESERVERS_INITIALIZED", $qname, $qclass);
 }
