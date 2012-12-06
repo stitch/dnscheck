@@ -215,7 +215,7 @@ sub test_soa_rname {
         $mailaddr =~ s/(?<!\\)\./@/;    # Replace unescaped dot with at-sign
         $mailaddr =~ s/\\\././g;        # De-escape escaped dots.
 
-        if ($parent->config->get('net')->{smtp}) {
+
             if ($parent->mail->test($mailaddr, $zone)) {
                 $logger->auto("SOA:RNAME_UNDELIVERABLE",
                     $zone, $soa->rname, $mailaddr);
@@ -223,7 +223,7 @@ sub test_soa_rname {
                 $logger->auto("SOA:RNAME_DELIVERABLE",
                     $zone, $soa->rname, $mailaddr);
             }
-        }
+
 
     } else {
         $errors += $logger->auto("SOA:RNAME_SYNTAX", $zone, $soa->rname);

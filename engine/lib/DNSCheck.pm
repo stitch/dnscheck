@@ -503,9 +503,7 @@ after a test is run, since before there is obviously no data to extract.
 
 =item ->mail()
 
-=item ->smtp()
-
-These eleven methods all return properly configured objects of the
+These ten methods all return properly configured objects of the
 respective test classes. For more details on how to use the objects,
 see the documentation on the modules in question. Generally, though,
 they have a main entry method called C<test> that runs all available
@@ -546,7 +544,6 @@ L<DNSCheck::Test::Common.pm>, L<DNSCheck::Test::Connectivity.pm>,
 L<DNSCheck::Test::Consistency.pm>, L<DNSCheck::Test::Delegation.pm>,
 L<DNSCheck::Test::DNSSEC.pm>, L<DNSCheck::Test::Host.pm>,
 L<DNSCheck::Test::Mail.pm>, L<DNSCheck::Test::Nameserver.pm>,
-L<DNSCheck::Test::SMTP.pm>, L<DNSCheck::Test::SOA.pm>,
-L<DNSCheck::Test::Zone.pm>
+L<DNSCheck::Test::SOA.pm>, L<DNSCheck::Test::Zone.pm>
 
 =cut

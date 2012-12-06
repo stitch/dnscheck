@@ -125,12 +125,6 @@ An MX or A record must exist for the domain name of the email address.
 =item *
 The MX record must point to a valid hostname.
 
-=item *
-The mail exchanger should be reachable by IPv4.
-
-=item *
-Mail for the email address must be deliverable via SMTP.
-
 =back
 
 =head1 METHODS
@@ -141,7 +135,6 @@ Mail for the email address must be deliverable via SMTP.
 
 =head1 SEE ALSO
 
-L<DNSCheck>, L<DNSCheck::Logger>, L<DNSCheck::Test::Host>,
-L<DNSCheck::Test::SMTP>
+L<DNSCheck>, L<DNSCheck::Logger>, L<DNSCheck::Test::Host>
 
 =cut
