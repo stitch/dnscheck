@@ -106,6 +106,8 @@ sub host_syntax {
 
     return 0 unless scalar(@labels) > 0;
 
+    $hostname .= '.' if $hostname !~ /\.$/;
+
     if ($labels[-1] eq '') {
         pop @labels;    # Empty label for root zone.
     }
@@ -121,7 +123,7 @@ sub host_syntax {
 
     # REQUIRE: RFC 3696 spells out that the top-level label may not be
     #          all-numeric
-    if (length($hostname) > 255) {
+    if (length($hostname) > 254) {
         return $self->logger->auto("HOST:ILLEGAL_NAME", $hostname, "Too long");
     }
 
