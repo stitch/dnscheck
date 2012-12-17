@@ -146,7 +146,7 @@ sub query_resolver {
 
     if ($packet) {
         $self->logger->auto("DNS:RESOLVER_RESPONSE",
-            sprintf("%d answer(s)", $packet->header->ancount));
+            sprintf("%d answer(s)", scalar($packet->answer)));
     }
 
     return $packet;
@@ -175,7 +175,7 @@ sub query_parent {
             "DNS:PARENT_RESPONSE",
             sprintf(
                 "%d answer(s), %d authority",
-                $packet->header->ancount, $packet->header->nscount
+                scalar($packet->answer), scalar($packet->authority)
             )
         );
     }
@@ -262,7 +262,7 @@ sub query_child {
 
     if ($packet) {
         $self->logger->auto("DNS:CHILD_RESPONSE",
-            sprintf("%d answer(s)", $packet->header->ancount));
+            sprintf("%d answer(s)", scalar($packet->answer)));
     }
 
     return $packet;
@@ -388,7 +388,7 @@ sub query_explicit {
     }
 
     $self->logger->auto("DNS:EXPLICIT_RESPONSE",
-        sprintf("%d answer(s)", $packet->header->ancount));
+        sprintf("%d answer(s)", scalar($packet->answer)));
 
     foreach my $rr ($packet->answer) {
         $self->logger->auto("DNS:ANSWER_DUMP", _rr2string($rr));
@@ -726,7 +726,7 @@ sub find_mx {
     $self->logger->auto("DNS:FIND_MX_BEGIN", $domain);
 
     $packet = $self->query_resolver($domain, "IN", 'MX');
-    if ($packet && $packet->header->ancount > 0) {
+    if ($packet && scalar($packet->answer) > 0) {
         foreach my $rr ($packet->answer) {
             if (($rr->type eq "MX") && $rr->exchange) {
                 push @dest, [$rr->preference, $rr->exchange];
@@ -737,7 +737,7 @@ sub find_mx {
     }
 
     $packet = $self->query_resolver($domain, "IN", 'A');
-    if ($packet && $packet->header->ancount > 0) {
+    if ($packet && scalar($packet->answer) > 0) {
         foreach my $rr ($packet->answer) {
             if ($rr->type eq "A") {
                 push @dest, $domain;
@@ -747,7 +747,7 @@ sub find_mx {
     }
 
     $packet = $self->query_resolver($domain, "IN", 'AAAA');
-    if ($packet && $packet->header->ancount > 0) {
+    if ($packet && scalar($packet->answer) > 0) {
         foreach my $rr ($packet->answer) {
             if ($rr->type eq "AAAA") {
                 push @dest, $domain;
@@ -774,16 +774,16 @@ sub find_addresses {
     my $ipv4 = $self->query_resolver($qname, $qclass, "A");
     my $ipv6 = $self->query_resolver($qname, $qclass, "AAAA");
 
-    unless (($ipv4 && $ipv4->header->ancount)
-        || ($ipv6 && $ipv6->header->ancount))
+    unless (($ipv4 && scalar($ipv4->answer))
+        || ($ipv6 && scalar($ipv6->answer)))
     {
         ## FIXME: error
         goto DONE;
     }
 
     my @answers = ();
-    push @answers, $ipv4->answer if (defined($ipv4) && $ipv4->header->ancount);
-    push @answers, $ipv6->answer if (defined($ipv6) && $ipv6->header->ancount);
+    push @answers, $ipv4->answer if (defined($ipv4) && scalar($ipv4->answer));
+    push @answers, $ipv6->answer if (defined($ipv6) && scalar($ipv6->answer));
 
     foreach my $rr (@answers) {
         if (($rr->type eq "A" or $rr->type eq "AAAA") && $rr->address) {
@@ -865,8 +865,8 @@ sub address_is_recursive {
     ## referral is ok
     goto DONE
       if (  $packet->header->rcode eq "NOERROR"
-        and $packet->header->ancount == 0
-        and $packet->header->nscount > 0);
+        and scalar($packet->answer) == 0
+        and scalar($packet->authority) > 0);
 
     $errors++;
 

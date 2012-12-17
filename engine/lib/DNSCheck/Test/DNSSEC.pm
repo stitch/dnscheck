@@ -139,7 +139,7 @@ sub test {
         $packet =
           $parent->dns->query_explicit($zone, $qclass, 'DNSKEY', $childns,
             $flags);
-        next unless ($packet and $packet->header->ancount > 0);
+        next unless ($packet and scalar($packet->answer) > 0);
         my $tmp = _dissect($packet, 'DNSKEY');
         if (    $tmp
             and ($tmp->{DNSKEY} and @{ $tmp->{DNSKEY} } > 0)
@@ -294,7 +294,7 @@ sub _check_child {
             $flags);
 
         if (    $packet->header->rcode eq "NOERROR"
-            and $packet->header->ancount > 0)
+            and scalar($packet->answer) > 0)
         {
             my $tmp = $packet->answerfrom;
             $errors += $logger->auto("DNSSEC:ADDITIONAL_PROCESSING_BROKEN",

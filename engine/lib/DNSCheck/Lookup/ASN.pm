@@ -127,7 +127,7 @@ sub _asn_helper {
     }
 
     my $packet = $self->parent->dns->query_resolver($rev, 'IN', 'TXT');
-    goto AGAIN unless (defined($packet) and $packet->header->ancount >= 0);
+    goto AGAIN unless $packet;
 
     my %asn;
     foreach my $rr ($packet->answer) {

@@ -79,7 +79,7 @@ sub test {
     if (!$testable) {
         my $p_a = $self->parent->dns->query_resolver($zone, 'IN', 'A');
         my $p_www = $self->parent->dns->query_resolver('www.' . $zone, 'IN', 'A');
-        if (($p_a and $p_a->header->ancount > 0) or ($p_www and $p_www->header->ancount > 0)) {
+        if (($p_a and scalar($p_a->answer) > 0) or ($p_www and scalar($p_www->answer) > 0)) {
             $self->logger->auto('DELEGATION:BROKEN_BUT_FUNCTIONAL', $zone);
         }
     }
@@ -190,7 +190,7 @@ sub consistent_glue {
         if ($c and $c->header->rcode eq "NOERROR") {
             ## got NOERROR, might be good or bad - dunno yet
 
-            if ($c->header->ancount > 0) {
+            if (scalar($c->answer) > 0) {
                 ## got positive answer back, let's see if this makes any sense
 
                 my $found = 0;
@@ -210,7 +210,7 @@ sub consistent_glue {
                     $errors +=
                       $logger->auto("DELEGATION:INCONSISTENT_GLUE", $g->name);
                 }
-            } elsif ($c->header->nscount > 0) {
+            } elsif (scalar($c->authority) > 0) {
                 ## got referer or nothing, authority section needs study
 
                 my $soa = undef;

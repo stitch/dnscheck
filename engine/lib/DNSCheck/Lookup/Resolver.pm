@@ -304,7 +304,7 @@ sub get_preload_data {
     $res->nameservers( $source ) if defined( $source );
     my $z = $res->send( '.', 'IN', 'NS' );
 
-    if ( !defined( $z ) or $z->header->ancount == 0 ) {
+    if ( !defined( $z ) or scalar($z->answer) == 0 ) {
         croak "Failed to get root zone data";
     }
 
@@ -318,7 +318,7 @@ sub get_preload_data {
         $nsname = $self->canonicalize_name( $nsname );
 
         my $a = $res->send( $nsname, 'IN', 'A' );
-        next if ( !defined( $a ) or $a->header->ancount == 0 );
+        next if ( !defined( $a ) or scalar($a->answer) == 0 );
         foreach my $rr ( $a->answer ) {
             next unless $rr->type eq 'A';
 
@@ -326,7 +326,7 @@ sub get_preload_data {
         }
 
         my $aaaa = $res->send( $nsname, 'IN', 'AAAA' );
-        next if ( !defined( $aaaa ) or $aaaa->header->ancount == 0 );
+        next if ( !defined( $aaaa ) or scalar($aaaa->answer) == 0 );
         foreach my $rr ( $aaaa->answer ) {
             next unless $rr->type eq 'AAAA';
 
@@ -569,7 +569,7 @@ sub recurse {
             $candidate = $p unless $candidate;
             next;
         }
-        elsif ( $p->header->ancount > 0 and grep { $_->type eq 'CNAME' } $p->answer ) {
+        elsif ( scalar($p->answer) > 0 and grep { $_->type eq 'CNAME' } $p->answer ) {
             print STDERR "recurse: Resolving non-auth CNAME.\n"
               if $self->{debug};
             my $cnamerr = ( grep { $_->type eq 'CNAME' } $p->answer )[0];
@@ -590,7 +590,7 @@ sub recurse {
         elsif ( $self->matches( $p, $name, $type, $class ) ) {
             return $p;
         }
-        elsif ( $p->header->nscount > 0 ) {
+        elsif ( scalar($p->authority) > 0 ) {
 
             my $zname = ( $p->authority )[0]->name;
             my $m = $self->matching_labels( $name, $zname );

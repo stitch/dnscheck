@@ -59,16 +59,16 @@ sub test {
     my $ipv6 = $parent->dns->query_resolver($hostname, $qclass, "AAAA");
 
     # REQUIRE: Host address must exist
-    unless (($ipv4 && $ipv4->header->ancount)
-        || ($ipv6 && $ipv6->header->ancount))
+    unless (($ipv4 && scalar($ipv4->answer))
+        || ($ipv6 && scalar($ipv6->answer)))
     {
         $errors += $logger->auto("HOST:NOT_FOUND", $hostname);
         goto DONE;
     }
 
     my @answers = ();
-    push @answers, $ipv4->answer if ($ipv4 && $ipv4->header->ancount);
-    push @answers, $ipv6->answer if ($ipv6 && $ipv6->header->ancount);
+    push @answers, $ipv4->answer if ($ipv4 && scalar($ipv4->answer));
+    push @answers, $ipv6->answer if ($ipv6 && scalar($ipv6->answer));
 
     # REQUIRE: Host must not point to a CNAME
     foreach my $rr (@answers) {

@@ -139,7 +139,7 @@ sub test {
     my $reverse = $ip->reverse_ip();
     my $ptr = $parent->dns->query_resolver($reverse, $qclass, "PTR");
 
-    unless ($ptr && $ptr->header->ancount) {
+    unless ($ptr && scalar($ptr->answer)) {
         $logger->auto("ADDRESS:PTR_NOT_FOUND", $address, $reverse);
     } else {
 
@@ -154,8 +154,8 @@ sub test {
             my $ipv4 = $parent->dns->query_resolver($hostname, $qclass, "A");
             my $ipv6 = $parent->dns->query_resolver($hostname, $qclass, "AAAA");
 
-            unless (($ipv4 && $ipv4->header->ancount)
-                || ($ipv6 && $ipv6->header->ancount))
+            unless (($ipv4 && scalar($ipv4->answer))
+                || ($ipv6 && scalar($ipv6->answer)))
             {
                 $logger->auto("ADDRESS:PTR_HOSTNAME_NOT_FOUND",
                     $address, $hostname);

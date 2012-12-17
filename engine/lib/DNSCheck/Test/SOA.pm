@@ -111,7 +111,7 @@ sub test_soa_existence {
     # requested zone? As it's written now, any SOA record at all will make the
     # test pass. /Calle
     if (   $packet
-        && ($packet->header->ancount > 0)
+        && (scalar($packet->answer) > 0)
         && (($packet->answer)[0]->type eq "SOA"))
     {
         $self->logger->auto("SOA:FOUND", $zone);
@@ -121,7 +121,7 @@ sub test_soa_existence {
     }
 
     # REQUIRE: only ONE SOA record may exist
-    unless ($packet->header->ancount == 1) {
+    unless (scalar($packet->answer) == 1) {
         $errors += $self->logger->auto("SOA:MULTIPLE_SOA", $zone);
     }
 
@@ -150,7 +150,7 @@ sub test_soa_mname {
     my $packet;
     $packet = $parent->dns->query_resolver($zone, $self->qclass, "NS");
 
-    unless ($packet && $packet->header->ancount) {
+    unless ($packet && scalar($packet->answer)) {
         $errors += $logger->auto("SOA:NS_NOT_FOUND", $zone);
         return $errors;
     }
