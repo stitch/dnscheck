@@ -39,6 +39,15 @@ use DNSCheck::Locale;
 
 ######################################################################
 
+our %levels = (
+    DEBUG => 1,
+    INFO => 2,
+    NOTICE => 3,
+    WARNING => 4,
+    ERROR => 5,
+    CRITICAL => 6,
+);
+
 sub new {
     my $proto = shift;
     my $class = ref( $proto ) || $proto;
@@ -49,6 +58,7 @@ sub new {
     my $loglevels = $config->get( 'loglevels' );
 
     $self->{interactive} = $config->get( 'logging' )->{interactive};
+    $self->{min_level}   = $config->get( 'logging' )->{min_level};
     $self->{debug}       = $config->get( 'debug' );
 
     if ( $loglevels ) {
@@ -219,6 +229,11 @@ sub print {
         if ( $e->{level} eq 'DEBUG' and !$self->{debug} ) {
             next;
         }
+
+        if ($levels{$e->{level}} < $levels{$self->{min_level}}) {
+            next;
+        }
+
         if ( $self->locale ) {
             printf( "%7.3f: %s%s %s\n", ( $e->{timestamp} - $self->{start} ), $context, $e->{level}, $self->locale->expand( $e->{tag}, @{ $e->{arg} } ) );
 

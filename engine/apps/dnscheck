@@ -48,6 +48,7 @@ sub main {
         $configdir,  $sitedir,        $configfile, $siteconfigfile,
         $policyfile, $sitepolicyfile, $localefile, @nameservers,
         $what_test,  $rootsource,     $history,    @dsdata,
+        $level,
     );
 
     GetOptions(
@@ -67,6 +68,7 @@ sub main {
         'rootsource=s'     => \$rootsource,
         'history=s'        => \$history,
         'dsdata=s'         => \@dsdata,
+        'level=s'          => \$level,
     ) or pod2usage(2);
     pod2usage(1) if ($help);
 
@@ -77,7 +79,8 @@ sub main {
     }
 
     my $extras = {};
-    $extras->{logging}->{interactive} = 1;
+    $extras->{logging}{interactive} = 1;
+    $extras->{logging}{min_level}   = uc($level);
     $extras->{debug} = $debug;
 
     my $conf = {};
@@ -171,6 +174,7 @@ Options:
                        dnssec, delegation and soa.
  --dsdata              specify fake DS data for undelegeated testing. It
                        should be formatted like in a BIND zone file.
+ --level               minimum log level to display.
 
  More specific options override less specific ones. If you, for example, give
  both C<--configdir> and C<--sitepolicyfile> all config will be read from files
