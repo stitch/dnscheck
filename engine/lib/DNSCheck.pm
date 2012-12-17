@@ -146,7 +146,7 @@ sub add_fake_ds {
 
     $self->{faked} = 1;
 
-    my $ds = Net::DNS::RR->new($data);
+    my $ds = eval { Net::DNS::RR->new($data) };
     unless ($ds and $ds->type eq 'DS') {
         $self->logger->auto('FAKEGLUE:MALFORMED_DS', $data);
         return;
