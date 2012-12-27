@@ -262,8 +262,8 @@ sub fake_ds_packet {
     my $zone = shift;
 
     my $p = Net::DNS::Packet->new;
-    foreach my $rr (@{ $self->{fake}{ds}{$zone} }) {
-        $p->unique_push('answer', $rr);
+    foreach my $rr ( @{ $self->{fake}{ds}{$zone} } ) {
+        $p->unique_push( 'answer', $rr );
     }
 
     return $p;
@@ -304,7 +304,7 @@ sub get_preload_data {
     $res->nameservers( $source ) if defined( $source );
     my $z = $res->send( '.', 'IN', 'NS' );
 
-    if ( !defined( $z ) or scalar($z->answer) == 0 ) {
+    if ( !defined( $z ) or scalar( $z->answer ) == 0 ) {
         croak "Failed to get root zone data";
     }
 
@@ -318,7 +318,7 @@ sub get_preload_data {
         $nsname = $self->canonicalize_name( $nsname );
 
         my $a = $res->send( $nsname, 'IN', 'A' );
-        next if ( !defined( $a ) or scalar($a->answer) == 0 );
+        next if ( !defined( $a ) or scalar( $a->answer ) == 0 );
         foreach my $rr ( $a->answer ) {
             next unless $rr->type eq 'A';
 
@@ -326,7 +326,7 @@ sub get_preload_data {
         }
 
         my $aaaa = $res->send( $nsname, 'IN', 'AAAA' );
-        next if ( !defined( $aaaa ) or scalar($aaaa->answer) == 0 );
+        next if ( !defined( $aaaa ) or scalar( $aaaa->answer ) == 0 );
         foreach my $rr ( $aaaa->answer ) {
             next unless $rr->type eq 'AAAA';
 
@@ -468,12 +468,8 @@ sub get {
 
     @ns =
       map { $_->ip }
-          grep {
-              ( $_->version == 4 and $self->config->get('net')->{ipv4} )
-              or
-              ( $_->version == 6 and $self->config->get('net')->{ipv6} )
-              } 
-              map { Net::IP->new( $_ ) } @ns;
+      grep { ( $_->version == 4 and $self->config->get( 'net' )->{ipv4} ) or ( $_->version == 6 and $self->config->get( 'net' )->{ipv6} ) }
+      map { Net::IP->new( $_ ) } @ns;
 
     return unless @ns;
 
@@ -569,7 +565,7 @@ sub recurse {
             $candidate = $p unless $candidate;
             next;
         }
-        elsif ( scalar($p->answer) > 0 and grep { $_->type eq 'CNAME' } $p->answer ) {
+        elsif ( scalar( $p->answer ) > 0 and grep { $_->type eq 'CNAME' } $p->answer ) {
             print STDERR "recurse: Resolving non-auth CNAME.\n"
               if $self->{debug};
             my $cnamerr = ( grep { $_->type eq 'CNAME' } $p->answer )[0];
@@ -590,7 +586,7 @@ sub recurse {
         elsif ( $self->matches( $p, $name, $type, $class ) ) {
             return $p;
         }
-        elsif ( scalar($p->authority) > 0 ) {
+        elsif ( scalar( $p->authority ) > 0 ) {
 
             my $zname = ( $p->authority )[0]->name;
             my $m = $self->matching_labels( $name, $zname );
@@ -613,10 +609,11 @@ sub recurse {
                 push @stack, grep { !$seen{$_} } $self->simple_names_to_ips( @fns );
             }
             else {
-                push @stack, grep { !$seen{$_} } $self->names_to_ips(
-                    map { $_->nsdname }
+                push @stack,
+                  grep { !$seen{$_} } $self->names_to_ips(
+                    map  { $_->nsdname }
                     grep { $_->type eq 'NS' } $p->authority
-                );
+                  );
             }
             next;
         }

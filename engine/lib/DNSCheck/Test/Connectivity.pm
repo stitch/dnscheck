@@ -52,11 +52,11 @@ sub test {
     return 0 unless $parent->config->should_run;
 
     $logger->module_stack_push();
-    $logger->auto("CONNECTIVITY:BEGIN", $zone);
+    $logger->auto( "CONNECTIVITY:BEGIN", $zone );
 
-    my $errors = $self->test_v4($zone) + $self->test_v6($zone);
+    my $errors = $self->test_v4( $zone ) + $self->test_v6( $zone );
 
-    $logger->auto("CONNECTIVITY:END", $zone);
+    $logger->auto( "CONNECTIVITY:END", $zone );
     $logger->module_stack_pop();
 
     return $errors;
@@ -71,13 +71,14 @@ sub test_v4 {
 
     return 0 unless $parent->config->should_run;
 
-    my $errors = $self->test_as_diversity($zone, 4);
+    my $errors = $self->test_as_diversity( $zone, 4 );
 
     # REQUIRE: Domain name servers should live in more than one AS
-    if ($errors == 1) {
-        return $logger->auto("CONNECTIVITY:TOO_FEW_ASN");
-    } else {
-        return $logger->auto("CONNECTIVITY:ASN_COUNT_OK");
+    if ( $errors == 1 ) {
+        return $logger->auto( "CONNECTIVITY:TOO_FEW_ASN" );
+    }
+    else {
+        return $logger->auto( "CONNECTIVITY:ASN_COUNT_OK" );
     }
 }
 
@@ -90,19 +91,20 @@ sub test_v6 {
 
     return 0 unless $parent->config->should_run;
 
-    my $errors = $self->test_as_diversity($zone, 6);
+    my $errors = $self->test_as_diversity( $zone, 6 );
 
     # REQUIRE: Domain name servers should live in more than one AS
-    if ($errors == 1) {
-        return $logger->auto("CONNECTIVITY:V6_TOO_FEW_ASN");
-    } else {
-        return $logger->auto("CONNECTIVITY:V6_ASN_COUNT_OK");
+    if ( $errors == 1 ) {
+        return $logger->auto( "CONNECTIVITY:V6_TOO_FEW_ASN" );
+    }
+    else {
+        return $logger->auto( "CONNECTIVITY:V6_ASN_COUNT_OK" );
     }
 }
 
 sub test_as_diversity {
-    my $self = shift;
-    my $zone = shift;
+    my $self      = shift;
+    my $zone      = shift;
     my $ipversion = shift // 4;
 
     my $parent = $self->parent;
@@ -115,58 +117,67 @@ sub test_as_diversity {
 
     # Fetch nameservers
     my $ip;
-    if ($ipversion == 4) {
-        $ip = $parent->dns->get_nameservers_ipv4($zone, $qclass);
-    } elsif ($ipversion == 6) {
-        $ip = $parent->dns->get_nameservers_ipv6($zone, $qclass);
-    } else {
+    if ( $ipversion == 4 ) {
+        $ip = $parent->dns->get_nameservers_ipv4( $zone, $qclass );
+    }
+    elsif ( $ipversion == 6 ) {
+        $ip = $parent->dns->get_nameservers_ipv6( $zone, $qclass );
+    }
+    else {
         croak "Don't know how to hande IP version $ipversion";
     }
 
     return 1 if !$ip;
-    my @asdata = _clean_list(map {$parent->asn->asdata($_)} @$ip);
+    my @asdata = _clean_list( map { $parent->asn->asdata( $_ ) } @$ip );
 
     my %count;
     my $total = 0;
 
-    foreach my $item (@asdata) {
-        foreach my $as (@{$item->[0]}) {
+    foreach my $item ( @asdata ) {
+        foreach my $as ( @{ $item->[0] } ) {
             $count{$as} += 1;
         }
         $total += 1;
     }
 
-    if ($total <= 1 or max(values %count) == $total) {
-        return 1; # Error, one AS announced for all prefixes
-    } else {
+    if ( $total <= 1 or max( values %count ) == $total ) {
+        return 1;    # Error, one AS announced for all prefixes
+    }
+    else {
         return 0;
     }
 }
 
 sub _clean_list {
-    my ($head, @tail) = sort {$a->[1]->prefixlen <=> $b->[1]->prefixlen} @_;
+    my ( $head, @tail ) = sort { $a->[1]->prefixlen <=> $b->[1]->prefixlen } @_;
     my @tmp = ();
 
     return unless $head;
 
-    foreach my $item (@tail) {
-        my $res = $head->[1]->overlaps($item->[1]);
-        if ($res == $IP_NO_OVERLAP) {
+    foreach my $item ( @tail ) {
+        my $res = $head->[1]->overlaps( $item->[1] );
+        if ( $res == $IP_NO_OVERLAP ) {
             push @tmp, $item;
-        } elsif ($res == $IP_IDENTICAL) {
+        }
+        elsif ( $res == $IP_IDENTICAL ) {
+
             # Skip this $item
-        } elsif ($res == $IP_A_IN_B_OVERLAP) {
+        }
+        elsif ( $res == $IP_A_IN_B_OVERLAP ) {
             say "A in B";
-        } elsif ($res == $IP_B_IN_A_OVERLAP) {
+        }
+        elsif ( $res == $IP_B_IN_A_OVERLAP ) {
             say "B in A";
-        } elsif ($res == $IP_PARTIAL_OVERLAP) {
+        }
+        elsif ( $res == $IP_PARTIAL_OVERLAP ) {
             croak "Partial";
-        } else {
+        }
+        else {
             croak "Error";
         }
     }
 
-    return ($head, _clean_list(@tmp));
+    return ( $head, _clean_list( @tmp ) );
 }
 
 1;

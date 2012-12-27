@@ -48,57 +48,56 @@ sub test {
 
     return 0 unless $parent->config->should_run;
 
-    my $logger              = $parent->logger;
-    my $errors              = 0;
+    my $logger = $parent->logger;
+    my $errors = 0;
 
     $logger->module_stack_push();
-    $logger->auto("MAIL:BEGIN", $email);
+    $logger->auto( "MAIL:BEGIN", $email );
 
     # Slightly less broken than just using split()
-    my ($localpart, $domain) = $email =~ m|^ (.+) @ ([-_.a-z0-9]+) $|ix;
+    my ( $localpart, $domain ) = $email =~ m|^ (.+) @ ([-_.a-z0-9]+) $|ix;
 
-    unless (valid($email)) {
-        $errors += $logger->auto("MAIL:ADDRESS_SYNTAX", $email);
+    unless ( valid( $email ) ) {
+        $errors += $logger->auto( "MAIL:ADDRESS_SYNTAX", $email );
         goto DONE;
     }
 
     # REQUIRE: MX or A must exist for domain
-    my @mailhosts = $parent->dns->find_mx($domain);
+    my @mailhosts = $parent->dns->find_mx( $domain );
 
-    if (@mailhosts) {
-        $logger->auto("MAIL:MAIL_EXCHANGER", $email, join(",", @mailhosts));
+    if ( @mailhosts ) {
+        $logger->auto( "MAIL:MAIL_EXCHANGER", $email, join( ",", @mailhosts ) );
     }
 
-    if (defined($zone) and scalar(@mailhosts) == grep { m/$zone$/ } @mailhosts)
-    {
-        $logger->auto("MAIL:ALL_MX_IN_ZONE", $email, $zone);
+    if ( defined( $zone ) and scalar( @mailhosts ) == grep { m/$zone$/ } @mailhosts ) {
+        $logger->auto( "MAIL:ALL_MX_IN_ZONE", $email, $zone );
     }
 
-    unless (scalar @mailhosts) {
-        $errors += $logger->auto("MAIL:DOMAIN_NOT_FOUND", $domain);
+    unless ( scalar @mailhosts ) {
+        $errors += $logger->auto( "MAIL:DOMAIN_NOT_FOUND", $domain );
         goto DONE;
     }
 
     # REQUIRE: MX points to valid hostname
-    foreach my $hostname (@mailhosts) {
-        if ($parent->host->test($hostname) > 0) {
-            $errors += $logger->auto("MAIL:HOST_ERROR", $hostname);
+    foreach my $hostname ( @mailhosts ) {
+        if ( $parent->host->test( $hostname ) > 0 ) {
+            $errors += $logger->auto( "MAIL:HOST_ERROR", $hostname );
             next;
         }
 
-        my $ipv4 = $parent->dns->query_resolver($hostname, "IN", "A");
-        my $ipv6 = $parent->dns->query_resolver($hostname, "IN", "AAAA");
+        my $ipv4 = $parent->dns->query_resolver( $hostname, "IN", "A" );
+        my $ipv6 = $parent->dns->query_resolver( $hostname, "IN", "AAAA" );
 
         # REQUIRE: Warn if a mail exchanger is reachable by IPv6 only
-        if (   ($ipv4 && scalar($ipv4->answer) == 0)
-            && ($ipv6 && scalar($ipv6->answer) > 0))
+        if (   ( $ipv4 && scalar( $ipv4->answer ) == 0 )
+            && ( $ipv6 && scalar( $ipv6->answer ) > 0 ) )
         {
-            $errors += $logger->auto("MAIL:IPV6_ONLY", $hostname);
+            $errors += $logger->auto( "MAIL:IPV6_ONLY", $hostname );
         }
     }
 
   DONE:
-    $logger->auto("MAIL:END", $email);
+    $logger->auto( "MAIL:END", $email );
     $logger->module_stack_pop();
 
     return $errors;

@@ -30,7 +30,7 @@
 
 package DNSCheck;
 
-require 5.010001; # 5.10.1
+require 5.010001;    # 5.10.1
 use warnings;
 use strict;
 
@@ -64,24 +64,21 @@ our $VERSION = "1.4.0";
 
 sub new {
     my $proto = shift;
-    my $class = ref($proto) || $proto;
+    my $class = ref( $proto ) || $proto;
     my $self  = {};
     bless $self, $class;
 
     my $config_args = shift;
-    if ($config_args->{with_config_object}) {
+    if ( $config_args->{with_config_object} ) {
         $self->{config} = $config_args->{with_config_object};
-    } else {
-        $self->{config} = DNSCheck::Config->new(%{$config_args});
-        if (my $b64root = $self->{config}->get('dns')->{rootdata}) {
-            $self->config->put('root_zone_data', thaw(decode_base64($b64root)));
-        } else {
-            $self->config->put(
-                'root_zone_data',
-                DNSCheck::Lookup::Resolver->get_preload_data(
-                    $config_args->{rootsource}
-                )
-            );
+    }
+    else {
+        $self->{config} = DNSCheck::Config->new( %{$config_args} );
+        if ( my $b64root = $self->{config}->get( 'dns' )->{rootdata} ) {
+            $self->config->put( 'root_zone_data', thaw( decode_base64( $b64root ) ) );
+        }
+        else {
+            $self->config->put( 'root_zone_data', DNSCheck::Lookup::Resolver->get_preload_data( $config_args->{rootsource} ) );
         }
     }
 
@@ -123,17 +120,19 @@ sub add_fake_glue {
 
     $self->{faked} = 1;
 
-    unless (defined($ns_ip)) {
-        my @ip = $self->dns->find_addresses($ns_name, 'IN');
-        if (@ip == 0) {
-            $self->logger->auto("FAKEGLUE:NO_ADDRESS", $ns_name);
+    unless ( defined( $ns_ip ) ) {
+        my @ip = $self->dns->find_addresses( $ns_name, 'IN' );
+        if ( @ip == 0 ) {
+            $self->logger->auto( "FAKEGLUE:NO_ADDRESS", $ns_name );
             return;
-        } else {
-            $self->resolver->add_fake_glue($zone, $ns_name, $_) for @ip;
         }
-    } else {
-        unless ($self->resolver->add_fake_glue($zone, $ns_name, $ns_ip)) {
-            $self->logger->auto('FAKEGLUE:BROKEN_INFO', $ns_ip, $ns_name);
+        else {
+            $self->resolver->add_fake_glue( $zone, $ns_name, $_ ) for @ip;
+        }
+    }
+    else {
+        unless ( $self->resolver->add_fake_glue( $zone, $ns_name, $ns_ip ) ) {
+            $self->logger->auto( 'FAKEGLUE:BROKEN_INFO', $ns_ip, $ns_name );
         }
     }
 
@@ -146,13 +145,13 @@ sub add_fake_ds {
 
     $self->{faked} = 1;
 
-    my $ds = eval { Net::DNS::RR->new($data) };
-    unless ($ds and $ds->type eq 'DS') {
-        $self->logger->auto('FAKEGLUE:MALFORMED_DS', $data);
+    my $ds = eval { Net::DNS::RR->new( $data ) };
+    unless ( $ds and $ds->type eq 'DS' ) {
+        $self->logger->auto( 'FAKEGLUE:MALFORMED_DS', $data );
         return;
     }
 
-    $self->resolver->add_fake_ds($ds);
+    $self->resolver->add_fake_ds( $ds );
 
     return 1;
 }
@@ -168,8 +167,8 @@ sub undelegated_test {
 sub logger {
     my $self = shift;
 
-    unless (defined($self->{logger})) {
-        $self->{logger} = DNSCheck::Logger->new($self);
+    unless ( defined( $self->{logger} ) ) {
+        $self->{logger} = DNSCheck::Logger->new( $self );
     }
 
     return $self->{logger};
@@ -178,8 +177,8 @@ sub logger {
 sub dns {
     my $self = shift;
 
-    unless (defined($self->{dns})) {
-        $self->{dns} = DNSCheck::Lookup::DNS->new($self);
+    unless ( defined( $self->{dns} ) ) {
+        $self->{dns} = DNSCheck::Lookup::DNS->new( $self );
     }
 
     return $self->{dns};
@@ -188,8 +187,8 @@ sub dns {
 sub resolver {
     my $self = shift;
 
-    unless (defined($self->{resolver})) {
-        $self->{resolver} = DNSCheck::Lookup::Resolver->new($self);
+    unless ( defined( $self->{resolver} ) ) {
+        $self->{resolver} = DNSCheck::Lookup::Resolver->new( $self );
     }
 
     return $self->{resolver};
@@ -198,8 +197,8 @@ sub resolver {
 sub asn {
     my $self = shift;
 
-    unless (defined($self->{asn})) {
-        $self->{asn} = DNSCheck::Lookup::ASN->new($self);
+    unless ( defined( $self->{asn} ) ) {
+        $self->{asn} = DNSCheck::Lookup::ASN->new( $self );
     }
 
     return $self->{asn};
@@ -215,33 +214,30 @@ sub dbh {
     my $tries = 0;
     my $dbh;
 
-    unless (defined($self->config->get("dbi"))) {
+    unless ( defined( $self->config->get( "dbi" ) ) ) {
         return;
     }
 
-    unless (defined($self->{"dbh"}) && $self->{"dbh"}->ping) {
-        until (defined($dbh) or ($tries > 5)) {
+    unless ( defined( $self->{"dbh"} ) && $self->{"dbh"}->ping ) {
+        until ( defined( $dbh ) or ( $tries > 5 ) ) {
+
             # We don't care if config variables are unset. Just try to
             # connect using what we were given and see if it works.
             no warnings 'uninitialized';
             $tries += 1;
-            my $conf = $self->config->get("dbi");
-            my $dsn  = sprintf("DBI:mysql:database=%s;hostname=%s;port=%s",
-                $conf->{"database"}, $conf->{"host"}, $conf->{"port"});
+            my $conf = $self->config->get( "dbi" );
+            my $dsn = sprintf( "DBI:mysql:database=%s;hostname=%s;port=%s", $conf->{"database"}, $conf->{"host"}, $conf->{"port"} );
 
-            eval {
-                $dbh =
-                  DBI->connect($dsn, $conf->{"user"}, $conf->{"password"},
-                    { RaiseError => 1, AutoCommit => 1, PrintError => 0 });
-            };
-            if ($@) {
+            eval { $dbh = DBI->connect( $dsn, $conf->{"user"}, $conf->{"password"}, { RaiseError => 1, AutoCommit => 1, PrintError => 0 } ); };
+            if ( $@ ) {
                 carp "Failed to connect to database: $@";
             }
         }
 
-        if (defined($dbh)) {
+        if ( defined( $dbh ) ) {
             $self->{"dbh"} = $dbh;
-        } else {
+        }
+        else {
             croak "Cannot connect to database.";
         }
     }
@@ -252,10 +248,10 @@ sub dbh {
 sub _stddev {
     my @values = @_;
 
-    my $avg = (reduce { $a + $b } @values) / scalar(@values);
+    my $avg = ( reduce { $a + $b } @values ) / scalar( @values );
     my $dev = reduce { $a + $b } map { $_ * $_ } map { $_ - $avg } @values;
 
-    return sqrt($dev / scalar(@values));
+    return sqrt( $dev / scalar( @values ) );
 }
 
 sub log_nameserver_times {
@@ -265,24 +261,12 @@ sub log_nameserver_times {
     my $zone = shift;
     my %t    = %{ $self->resolver->times };
 
-    my %ns = map { $_ => 1 } (
-        @{ $self->dns->{nameservers}{$zone}{'IN'}{'ipv4'} },
-        @{ $self->dns->{nameservers}{$zone}{'IN'}{'ipv6'} },
-    );
+    my %ns = map { $_ => 1 } ( @{ $self->dns->{nameservers}{$zone}{'IN'}{'ipv4'} }, @{ $self->dns->{nameservers}{$zone}{'IN'}{'ipv6'} }, );
 
-    while (my ($k, $v) = each %t) {
+    while ( my ( $k, $v ) = each %t ) {
         next unless $ns{$k};
         my $sum = reduce { $a + $b } @$v;
-        $self->logger->auto(
-            'NSTIME:AVERAGE',
-            $zone,
-            $k,
-            scalar(@$v),
-            sprintf('%0.3f', 1000 * ($sum / @$v)),
-            sprintf('%0.3f', 1000 * min(@$v)),
-            sprintf('%0.3f', 1000 * max(@$v)),
-            sprintf('%0.3f', 1000 * _stddev(@$v)),
-        );
+        $self->logger->auto( 'NSTIME:AVERAGE', $zone, $k, scalar( @$v ), sprintf( '%0.3f', 1000 * ( $sum / @$v ) ), sprintf( '%0.3f', 1000 * min( @$v ) ), sprintf( '%0.3f', 1000 * max( @$v ) ), sprintf( '%0.3f', 1000 * _stddev( @$v ) ), );
     }
 }
 
@@ -292,8 +276,8 @@ sub log_nameserver_times {
 
 sub zone {
     my $self = shift;
-    unless (defined($self->{test_zone})) {
-        $self->{test_zone} = DNSCheck::Test::Zone->new($self);
+    unless ( defined( $self->{test_zone} ) ) {
+        $self->{test_zone} = DNSCheck::Test::Zone->new( $self );
     }
 
     return $self->{test_zone};
@@ -302,8 +286,8 @@ sub zone {
 sub host {
     my $self = shift;
 
-    unless (defined($self->{test_host})) {
-        $self->{test_host} = DNSCheck::Test::Host->new($self);
+    unless ( defined( $self->{test_host} ) ) {
+        $self->{test_host} = DNSCheck::Test::Host->new( $self );
     }
 
     return $self->{test_host};
@@ -312,8 +296,8 @@ sub host {
 sub address {
     my $self = shift;
 
-    unless (defined($self->{test_address})) {
-        $self->{test_address} = DNSCheck::Test::Address->new($self);
+    unless ( defined( $self->{test_address} ) ) {
+        $self->{test_address} = DNSCheck::Test::Address->new( $self );
     }
 
     return $self->{test_address};
@@ -322,8 +306,8 @@ sub address {
 sub soa {
     my $self = shift;
 
-    unless (defined($self->{test_soa})) {
-        $self->{test_soa} = DNSCheck::Test::SOA->new($self);
+    unless ( defined( $self->{test_soa} ) ) {
+        $self->{test_soa} = DNSCheck::Test::SOA->new( $self );
     }
 
     return $self->{test_soa};
@@ -332,8 +316,8 @@ sub soa {
 sub connectivity {
     my $self = shift;
 
-    unless (defined($self->{test_connectivity})) {
-        $self->{test_connectivity} = DNSCheck::Test::Connectivity->new($self);
+    unless ( defined( $self->{test_connectivity} ) ) {
+        $self->{test_connectivity} = DNSCheck::Test::Connectivity->new( $self );
     }
 
     return $self->{test_connectivity};
@@ -342,8 +326,8 @@ sub connectivity {
 sub consistency {
     my $self = shift;
 
-    unless (defined($self->{test_consistency})) {
-        $self->{test_consistency} = DNSCheck::Test::Consistency->new($self);
+    unless ( defined( $self->{test_consistency} ) ) {
+        $self->{test_consistency} = DNSCheck::Test::Consistency->new( $self );
     }
 
     return $self->{test_consistency};
@@ -352,8 +336,8 @@ sub consistency {
 sub delegation {
     my $self = shift;
 
-    unless (defined($self->{test_delegation})) {
-        $self->{test_delegation} = DNSCheck::Test::Delegation->new($self);
+    unless ( defined( $self->{test_delegation} ) ) {
+        $self->{test_delegation} = DNSCheck::Test::Delegation->new( $self );
     }
 
     return $self->{test_delegation};
@@ -362,8 +346,8 @@ sub delegation {
 sub nameserver {
     my $self = shift;
 
-    unless (defined($self->{test_nameserver})) {
-        $self->{test_nameserver} = DNSCheck::Test::Nameserver->new($self);
+    unless ( defined( $self->{test_nameserver} ) ) {
+        $self->{test_nameserver} = DNSCheck::Test::Nameserver->new( $self );
     }
 
     return $self->{test_nameserver};
@@ -372,8 +356,8 @@ sub nameserver {
 sub dnssec {
     my $self = shift;
 
-    unless (defined($self->{test_dnssec})) {
-        $self->{test_dnssec} = DNSCheck::Test::DNSSEC->new($self);
+    unless ( defined( $self->{test_dnssec} ) ) {
+        $self->{test_dnssec} = DNSCheck::Test::DNSSEC->new( $self );
     }
 
     return $self->{test_dnssec};
@@ -382,8 +366,8 @@ sub dnssec {
 sub mail {
     my $self = shift;
 
-    unless (defined($self->{test_mail})) {
-        $self->{test_mail} = DNSCheck::Test::Mail->new($self);
+    unless ( defined( $self->{test_mail} ) ) {
+        $self->{test_mail} = DNSCheck::Test::Mail->new( $self );
     }
 
     return $self->{test_mail};
