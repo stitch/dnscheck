@@ -475,7 +475,7 @@ sub _dissect {
     return \%response;
 }
 
-sub _check_signature ($$$$) {
+sub _check_signature {
     my $parent = shift;
     my $zone   = shift;
     my $rrsig  = shift;
@@ -519,7 +519,7 @@ sub _check_signature ($$$$) {
     return 1;
 }
 
-sub _parse_timestamp ($) {
+sub _parse_timestamp {
     my $str = shift;
 
     if ( $str =~ /^(\d{4})(\d{2})(\d{2})(\d{2})(\d{2})(\d{2})$/ ) {
@@ -530,7 +530,7 @@ sub _parse_timestamp ($) {
     }
 }
 
-sub _count_in_list ($$) {
+sub _count_in_list {
     my $value = shift;
     my $list  = shift;
 

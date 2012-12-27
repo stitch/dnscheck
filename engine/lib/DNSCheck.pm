@@ -33,6 +33,7 @@ package DNSCheck;
 require 5.010001;    # 5.10.1
 use warnings;
 use strict;
+use utf8;
 
 use DBI;
 use Carp;
@@ -223,6 +224,7 @@ sub dbh {
 
             # We don't care if config variables are unset. Just try to
             # connect using what we were given and see if it works.
+            ## no critic (TestingAndDebugging::ProhibitNoWarnings)
             no warnings 'uninitialized';
             $tries += 1;
             my $conf = $self->config->get( "dbi" );
@@ -255,6 +257,7 @@ sub _stddev {
 }
 
 sub log_nameserver_times {
+    ## no critic (TestingAndDebugging::ProhibitNoWarnings)
     no warnings 'uninitialized';
 
     my $self = shift;

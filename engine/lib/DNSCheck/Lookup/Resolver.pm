@@ -394,7 +394,8 @@ sub highest_known_ns {
 
     my @candidates;
     while ( 1 ) {
-        my @tmp = $self->simple_names_to_ips( keys %{ $self->{cache}{ns}{$name} } )
+        my @tmp;
+        @tmp = $self->simple_names_to_ips( keys %{ $self->{cache}{ns}{$name} } )
           if $self->{cache}{ns}{$name};
         push @candidates, @tmp if @tmp;
 
