@@ -52,9 +52,9 @@ messages:
     descr: The IP address is announced by an autonomous system (AS).
     format: 'Name server %s announced by: %s'
   CONNECTIVITY:ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: The zone's name servers are located within more than one autonomous system.
-    format: Zone announced by more than one ASN (%s).
+    format: Zone announced by more than one ASN.
   CONNECTIVITY:ASN_LIST:
     args: 1
     format: 'Zone announced by IPv4 ASN: %s'
@@ -73,17 +73,17 @@ messages:
     descr: The IP address is not announced by any autonomous system and is most probably not reachable on the Internet.
     format: Name server %s not announced by any AS.
   CONNECTIVITY:TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: "The zone's name servers are all located within the same, (or no), autonomous system."
-    format: Zone announced by fewer than two IPv4 ASN (%s).
+    format: Zone announced by fewer than two IPv4 ASN.
   CONNECTIVITY:V6_ANNOUNCED_BY_ASN:
     args: 2
     descr: The IP address is announced by an autonomous system (AS).
     format: 'Name server %s announced over IPv6 by: %s'
   CONNECTIVITY:V6_ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: The zone's name servers are located within more than one autonomous system.
-    format: Zone announced by more than one IPv6 ASN (%s).
+    format: Zone announced by more than one IPv6 ASN.
   CONNECTIVITY:V6_ASN_LIST:
     args: 1
     format: 'Zone announced by IPv6 ASN: %s'
@@ -96,9 +96,9 @@ messages:
     descr: The IP address is not announced by any autonomous system and is most probably not reachable on the Internet.
     format: Name server %s not announced by any IPv6 AS.
   CONNECTIVITY:V6_TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: "The zone's name servers are all located within the same, (or no), autonomous system."
-    format: Zone announced by fewer than two IPv6 ASN (%s).
+    format: Zone announced by fewer than two IPv6 ASN.
   CONSISTENCY:BEGIN:
     args: 1
     format: Begin testing zone consistency for %s.
