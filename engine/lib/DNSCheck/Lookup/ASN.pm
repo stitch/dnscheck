@@ -33,6 +33,7 @@ package DNSCheck::Lookup::ASN;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use Data::Dumper;
 use Net::DNS;
@@ -41,7 +42,7 @@ use Carp;
 
 sub new {
     my $proto = shift;
-    my $class = ref($proto) || $proto;
+    my $class = ref( $proto ) || $proto;
     my $self  = {};
     bless $self, $class;
 
@@ -49,8 +50,8 @@ sub new {
 
     # hash of ASN indexed by IP
     $self->{asn}     = ();
-    $self->{v4roots} = $self->{parent}->config->get("net")->{v4root};
-    $self->{v6roots} = $self->{parent}->config->get("net")->{v6root};
+    $self->{v4roots} = $self->{parent}->config->get( "net" )->{v4root};
+    $self->{v6roots} = $self->{parent}->config->get( "net" )->{v6root};
 
     return $self;
 }
@@ -71,32 +72,34 @@ sub lookup {
     my $self = shift;
     my $ip   = shift;
 
-    $self->parent->logger->auto("ASN:LOOKUP", $ip);
+    $self->parent->logger->auto( "ASN:LOOKUP", $ip );
 
-    my $nip = Net::IP->new($ip);
+    my $nip = Net::IP->new( $ip );
 
-    if (!$nip) {
-        $self->parent->logger->auto("ASN:INVALID_ADDRESS", $ip);
+    if ( !$nip ) {
+        $self->parent->logger->auto( "ASN:INVALID_ADDRESS", $ip );
         return;
-    } else {
+    }
+    else {
         $ip = $nip->ip;    # Normalize
     }
 
-    unless ($self->{asn}{$ip}) {
-        $self->{asn}{$ip} = $self->_asn_helper($nip);
+    unless ( $self->{asn}{$ip} ) {
+        $self->{asn}{$ip} = $self->_asn_helper( $nip );
     }
 
     my $asn = $self->{asn}{$ip};
 
-    if ($asn) {
-        if (scalar @{$asn} > 0) {
-            $self->parent->logger->auto("ASN:ANNOUNCE_BY", $ip,
-                join(",", @{$asn}));
-        } else {
-            $self->parent->logger->auto("ASN:NOT_ANNOUNCE", $ip);
+    if ( $asn ) {
+        if ( scalar @{$asn} > 0 ) {
+            $self->parent->logger->auto( "ASN:ANNOUNCE_BY", $ip, join( ",", @{$asn} ) );
         }
-    } else {
-        $self->parent->logger->auto("ASN:LOOKUP_ERROR", $ip);
+        else {
+            $self->parent->logger->auto( "ASN:NOT_ANNOUNCE", $ip );
+        }
+    }
+    else {
+        $self->parent->logger->auto( "ASN:LOOKUP_ERROR", $ip );
     }
 
     return $asn;
@@ -109,39 +112,41 @@ sub _asn_helper {
     my @r6   = @{ $self->{v6roots} };
 
   AGAIN:
-    if (@r4 == 0 or @r6 == 0) {
+    if ( @r4 == 0 or @r6 == 0 ) {
 
         # No more roots to try
         return;
     }
 
     my $rev = $ip->reverse_ip;
-    if ($ip->version == 6) {
+    if ( $ip->version == 6 ) {
         my $r = shift @r6;
         $rev =~ s/ip6\.arpa/$r/e;
-    } elsif ($ip->version == 4) {
+    }
+    elsif ( $ip->version == 4 ) {
         my $r = shift @r4;
         $rev =~ s/in-addr\.arpa/$r/e;
-    } else {
+    }
+    else {
         croak "Strange IP version: " . $ip->version;
     }
 
-    my $packet = $self->parent->dns->query_resolver($rev, 'IN', 'TXT');
+    my $packet = $self->parent->dns->query_resolver( $rev, 'IN', 'TXT' );
     goto AGAIN unless $packet;
 
     my %asn;
-    foreach my $rr ($packet->answer) {
+    foreach my $rr ( $packet->answer ) {
         next unless $rr->type eq 'TXT';
-        foreach my $txt ($rr->char_str_list) {
-            my ($numbers, $res) = split(/ \| /, $txt, 2);
-            foreach my $n (split(/\s+/, $numbers)) {
+        foreach my $txt ( $rr->char_str_list ) {
+            my ( $numbers, $res ) = split( / \| /, $txt, 2 );
+            foreach my $n ( split( /\s+/, $numbers ) ) {
                 warn "Strange reply: $txt" unless $n =~ m|^\d+$|;
                 $asn{$n} = 1;
             }
         }
     }
 
-    return [keys %asn];
+    return [ keys %asn ];
 }
 
 1;

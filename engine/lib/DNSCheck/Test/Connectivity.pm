@@ -33,6 +33,7 @@ package DNSCheck::Test::Connectivity;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 use Net::IP;
 
 use base 'DNSCheck::Test::Common';
@@ -50,11 +51,11 @@ sub test {
     return 0 unless $parent->config->should_run;
 
     $logger->module_stack_push();
-    $logger->auto("CONNECTIVITY:BEGIN", $zone);
+    $logger->auto( "CONNECTIVITY:BEGIN", $zone );
 
-    my $errors = $self->test_v4($zone) + $self->test_v6($zone);
+    my $errors = $self->test_v4( $zone ) + $self->test_v6( $zone );
 
-    $logger->auto("CONNECTIVITY:END", $zone);
+    $logger->auto( "CONNECTIVITY:END", $zone );
     $logger->module_stack_pop();
 
     return $errors;
@@ -75,35 +76,35 @@ sub test_v4 {
     my @nameservers = ();
 
     # Fetch IPv4 nameservers
-    my $ipv4 = $parent->dns->get_nameservers_ipv4($zone, $qclass);
-    push @nameservers, @{$ipv4} if ($ipv4);
+    my $ipv4 = $parent->dns->get_nameservers_ipv4( $zone, $qclass );
+    push @nameservers, @{$ipv4} if ( $ipv4 );
 
-    foreach my $address (@nameservers) {
-        my $as_lookup = $parent->asn->lookup($address);
+    foreach my $address ( @nameservers ) {
+        my $as_lookup = $parent->asn->lookup( $address );
         my @as_list   = ();
         @as_list = @{$as_lookup} if $as_lookup;
 
-        foreach my $asn (@as_list) {
+        foreach my $asn ( @as_list ) {
             $as_set{$asn} = $asn;
         }
 
-        $logger->auto("CONNECTIVITY:ANNOUNCED_BY_ASN",
-            $address, join(",", @as_list));
+        $logger->auto( "CONNECTIVITY:ANNOUNCED_BY_ASN", $address, join( ",", @as_list ) );
 
         # REQUIRE: A name server must be announced
-        if (scalar @as_list < 1) {
-            $errors += $logger->auto("CONNECTIVITY:NOT_ANNOUNCED", $address);
+        if ( scalar @as_list < 1 ) {
+            $errors += $logger->auto( "CONNECTIVITY:NOT_ANNOUNCED", $address );
         }
     }
 
-    $logger->auto("CONNECTIVITY:ASN_LIST", join(",", keys(%as_set)));
+    $logger->auto( "CONNECTIVITY:ASN_LIST", join( ",", keys( %as_set ) ) );
 
     # REQUIRE: Domain name servers should live in more than one AS
     my $as_count = scalar keys %as_set;
-    if ($as_count <= 1) {
-        $errors += $logger->auto("CONNECTIVITY:TOO_FEW_ASN", $as_count);
-    } else {
-        $logger->auto("CONNECTIVITY:ASN_COUNT_OK", $as_count);
+    if ( $as_count <= 1 ) {
+        $errors += $logger->auto( "CONNECTIVITY:TOO_FEW_ASN", $as_count );
+    }
+    else {
+        $logger->auto( "CONNECTIVITY:ASN_COUNT_OK", $as_count );
     }
 
   DONE:
@@ -126,35 +127,35 @@ sub test_v6 {
     my @nameservers = ();
 
     # Fetch IPv6 nameservers.
-    my $ipv6 = $parent->dns->get_nameservers_ipv6($zone, $qclass);
-    push @nameservers, @{$ipv6} if ($ipv6);
+    my $ipv6 = $parent->dns->get_nameservers_ipv6( $zone, $qclass );
+    push @nameservers, @{$ipv6} if ( $ipv6 );
 
-    foreach my $address (map { Net::IP->new($_)->ip } @nameservers) {
-        my $as_lookup = $parent->asn->lookup($address);
+    foreach my $address ( map { Net::IP->new( $_ )->ip } @nameservers ) {
+        my $as_lookup = $parent->asn->lookup( $address );
         my @as_list   = ();
         @as_list = @{$as_lookup} if $as_lookup;
 
-        foreach my $asn (@as_list) {
+        foreach my $asn ( @as_list ) {
             $as_set{$asn} = $asn;
         }
 
-        $logger->auto("CONNECTIVITY:V6_ANNOUNCED_BY_ASN",
-            $address, join(",", @as_list));
+        $logger->auto( "CONNECTIVITY:V6_ANNOUNCED_BY_ASN", $address, join( ",", @as_list ) );
 
         # REQUIRE: A name server must be announced
-        if (scalar @as_list < 1) {
-            $errors += $logger->auto("CONNECTIVITY:V6_NOT_ANNOUNCED", $address);
+        if ( scalar @as_list < 1 ) {
+            $errors += $logger->auto( "CONNECTIVITY:V6_NOT_ANNOUNCED", $address );
         }
     }
 
-    $logger->auto("CONNECTIVITY:V6_ASN_LIST", join(",", keys(%as_set)));
+    $logger->auto( "CONNECTIVITY:V6_ASN_LIST", join( ",", keys( %as_set ) ) );
 
     # REQUIRE: Domain name servers should live in more than one AS
     my $as_count = scalar keys %as_set;
-    if ($as_count <= 1) {
-        $errors += $logger->auto("CONNECTIVITY:V6_TOO_FEW_ASN", $as_count);
-    } else {
-        $logger->auto("CONNECTIVITY:V6_ASN_COUNT_OK", $as_count);
+    if ( $as_count <= 1 ) {
+        $errors += $logger->auto( "CONNECTIVITY:V6_TOO_FEW_ASN", $as_count );
+    }
+    else {
+        $logger->auto( "CONNECTIVITY:V6_ASN_COUNT_OK", $as_count );
     }
 
   DONE:

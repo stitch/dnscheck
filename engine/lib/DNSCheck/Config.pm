@@ -31,6 +31,7 @@ package DNSCheck::Config;
 
 require 5.010001;
 use strict;
+use utf8;
 use warnings;
 
 use File::Spec::Functions;
@@ -44,52 +45,41 @@ use Config::Any;
 
 sub new {
     my $proto = shift;
-    my $class = ref($proto) || $proto;
+    my $class = ref( $proto ) || $proto;
     my $self  = {};
     bless $self, $proto;
 
     my %arg = @_;
-    
-    my $default_config = _get_with_path(
-        _catfile(dist_dir('DNSCheck'), 'config.yaml')
-    );
-    
-    if ($arg{'configfile'} and not -r $arg{'configfile'}) {
+
+    my $default_config = _get_with_path( _catfile( dist_dir( 'DNSCheck' ), 'config.yaml' ) );
+
+    if ( $arg{'configfile'} and not -r $arg{'configfile'} ) {
         croak 'Configuration file ' . $arg{'configfile'} . ' not readable';
     }
-    
-    my $config = _get_with_path(
-        $arg{'configfile'},
-        _catfile($arg{'configdir'}, 'config.yaml'),
-        '/etc/dnscheck/config.yaml',
-    );
-    
-    my $default_policy = _get_with_path(
-        _catfile(dist_dir('DNSCheck'), 'policy.yaml')
-    );
-    
-    my $policy = _get_with_path(
-        $arg{'policyfile'},
-        _catfile($arg{'policydir'}, 'policy.yaml'),
-        '/etc/dnscheck/policy.yaml',
-    );
-    
+
+    my $config = _get_with_path( $arg{'configfile'}, _catfile( $arg{'configdir'}, 'config.yaml' ), '/etc/dnscheck/config.yaml', );
+
+    my $default_policy = _get_with_path( _catfile( dist_dir( 'DNSCheck' ), 'policy.yaml' ) );
+
+    my $policy = _get_with_path( $arg{'policyfile'}, _catfile( $arg{'policydir'}, 'policy.yaml' ), '/etc/dnscheck/policy.yaml', );
+
     my $locale;
-    if ($arg{'localefile'}) {
-        $locale = _get_with_path($arg{'localefile'});
-    } elsif ($arg{'locale'}) {
-        $locale = _get_with_path(_catfile(dist_dir('DNSCheck'), $arg{'locale'} . '.yaml'));
+    if ( $arg{'localefile'} ) {
+        $locale = _get_with_path( $arg{'localefile'} );
     }
-    
-    _hashrefcopy($self, $default_config);
-    _hashrefcopy($self, $config) if defined($config);
-    _hashrefcopy($self, $default_policy);
-    _hashrefcopy($self, $policy) if defined($policy);
+    elsif ( $arg{'locale'} ) {
+        $locale = _get_with_path( _catfile( dist_dir( 'DNSCheck' ), $arg{'locale'} . '.yaml' ) );
+    }
+
+    _hashrefcopy( $self, $default_config );
+    _hashrefcopy( $self, $config ) if defined( $config );
+    _hashrefcopy( $self, $default_policy );
+    _hashrefcopy( $self, $policy ) if defined( $policy );
 
     $self->{locale} = $locale;
 
-    _hashrefcopy($self, $arg{extras})
-      if (defined($arg{extras}) && (ref($arg{extras}) eq 'HASH'));
+    _hashrefcopy( $self, $arg{extras} )
+      if ( defined( $arg{extras} ) && ( ref( $arg{extras} ) eq 'HASH' ) );
 
     # Special cases
     $self->{'hostname'} //= hostname();
@@ -100,11 +90,11 @@ sub new {
 
 sub get {
     my $self = shift;
-    my ($key) = @_;
+    my ( $key ) = @_;
 
     my $res = $self->{$key};
-    if (ref($res)) {
-        $res = dclone($res);
+    if ( ref( $res ) ) {
+        $res = dclone( $res );
     }
 
     return $res;
@@ -113,7 +103,7 @@ sub get {
 sub put {
     my $self = shift;
 
-    my ($key, $value) = @_;
+    my ( $key, $value ) = @_;
     $self->{$key} = $value;
 
     return $value;
@@ -122,13 +112,14 @@ sub put {
 sub should_run {
     my $self = shift;
 
-    my (undef, undef, undef, $subroutine) = caller(1);
+    my ( undef, undef, undef, $subroutine ) = caller( 1 );
 
-    if ($self->get("disable") and $subroutine =~ /^DNSCheck::Test::(.*)$/) {
-        my ($module, $test) = map { lc($_) } split('::', $1, 2);
+    if ( $self->get( "disable" ) and $subroutine =~ /^DNSCheck::Test::(.*)$/ ) {
+        my ( $module, $test ) = map { lc( $_ ) } split( '::', $1, 2 );
 
-        return !$self->get("disable")->{$module}{$test};
-    } else {
+        return !$self->get( "disable" )->{$module}{$test};
+    }
+    else {
         return 1;
     }
 }
@@ -138,37 +129,40 @@ sub should_run {
 ###
 
 sub _catfile {
-    my @tmp = grep {$_} @_;
-    
-    return catfile(@tmp);
+    my @tmp = grep { $_ } @_;
+
+    return catfile( @tmp );
 }
 
 sub _get_with_path {
-    my @files = grep {$_} @_;
+    my @files = grep { $_ } @_;
 
-    my $cfg = Config::Any->load_files({
-        files => \@files,
-        use_ext => 1,
-    });
+    my $cfg = Config::Any->load_files(
+        {
+            files   => \@files,
+            use_ext => 1,
+        }
+    );
 
-    my ($c) = values %{$cfg->[0]};
+    my ( $c ) = values %{ $cfg->[0] };
     return $c;
 }
 
 sub _hashrefcopy {
-    my ($target, $source) = @_;
+    my ( $target, $source ) = @_;
 
-    foreach my $pkey (keys %{$source}) {
-        $target->{$pkey} = {} unless defined($target->{$pkey});
+    foreach my $pkey ( keys %{$source} ) {
+        $target->{$pkey} = {} unless defined( $target->{$pkey} );
 
-        if (ref($source->{$pkey}) eq 'HASH') {
+        if ( ref( $source->{$pkey} ) eq 'HASH' ) {
 
-    # Hash slice assignment to copy all keys under the $pkey top-level key.
-    # We don't just copy the entire hash since a site file may have changed only
-    # some of the keys in it.
+            # Hash slice assignment to copy all keys under the $pkey top-level key.
+            # We don't just copy the entire hash since a site file may have changed only
+            # some of the keys in it.
             @{ $target->{$pkey} }{ keys %{ $source->{$pkey} } } =
               values %{ $source->{$pkey} };
-        } else {
+        }
+        else {
             $target->{$pkey} = $source->{$pkey};
         }
     }

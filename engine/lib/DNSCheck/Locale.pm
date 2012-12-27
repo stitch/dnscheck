@@ -33,6 +33,7 @@ package DNSCheck::Locale;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use overload bool => \&_to_boolean;
 
@@ -40,7 +41,7 @@ use overload bool => \&_to_boolean;
 
 sub new {
     my $proto = shift;
-    my $class = ref($proto) || $proto;
+    my $class = ref( $proto ) || $proto;
     my $self  = {};
 
     my $config = shift;
@@ -59,14 +60,15 @@ sub expand {
 
     my $format = $self->{messages}{$tag}{format};
 
-    if ($format and @args != $self->{messages}{$tag}{args}) {
+    if ( $format and @args != $self->{messages}{$tag}{args} ) {
         warn "invalid number of arguments supplied for $tag";
     }
 
-    if ($format) {
-        return sprintf($format, @args);
-    } else {
-        return sprintf("[MISSING LOCALE] %s %s", $tag, join(",", @args));
+    if ( $format ) {
+        return sprintf( $format, @args );
+    }
+    else {
+        return sprintf( "[MISSING LOCALE] %s %s", $tag, join( ",", @args ) );
     }
 }
 

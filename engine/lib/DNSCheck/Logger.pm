@@ -33,6 +33,7 @@ package DNSCheck::Logger;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use Time::HiRes qw(time);
 use DNSCheck::Locale;
@@ -40,11 +41,11 @@ use DNSCheck::Locale;
 ######################################################################
 
 our %levels = (
-    DEBUG => 1,
-    INFO => 2,
-    NOTICE => 3,
-    WARNING => 4,
-    ERROR => 5,
+    DEBUG    => 1,
+    INFO     => 2,
+    NOTICE   => 3,
+    WARNING  => 4,
+    ERROR    => 5,
     CRITICAL => 6,
 );
 
@@ -230,7 +231,7 @@ sub print {
             next;
         }
 
-        if ($levels{$e->{level}} < $levels{$self->{min_level}}) {
+        if ( $levels{ $e->{level} } < $levels{ $self->{min_level} } ) {
             next;
         }
 

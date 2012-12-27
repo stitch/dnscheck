@@ -33,6 +33,7 @@ package DNSCheck::Test::Host;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use base 'DNSCheck::Test::Common';
 
@@ -50,38 +51,38 @@ sub test {
     my $errors = 0;
 
     $logger->module_stack_push();
-    $logger->auto("HOST:BEGIN", $hostname);
+    $logger->auto( "HOST:BEGIN", $hostname );
 
-    $errors += $self->host_syntax($hostname);
+    $errors += $self->host_syntax( $hostname );
     goto DONE if $errors > 0;
 
-    my $ipv4 = $parent->dns->query_resolver($hostname, $qclass, "A");
-    my $ipv6 = $parent->dns->query_resolver($hostname, $qclass, "AAAA");
+    my $ipv4 = $parent->dns->query_resolver( $hostname, $qclass, "A" );
+    my $ipv6 = $parent->dns->query_resolver( $hostname, $qclass, "AAAA" );
 
     # REQUIRE: Host address must exist
-    unless (($ipv4 && scalar($ipv4->answer))
-        || ($ipv6 && scalar($ipv6->answer)))
+    unless ( ( $ipv4 && scalar( $ipv4->answer ) )
+        || ( $ipv6 && scalar( $ipv6->answer ) ) )
     {
-        $errors += $logger->auto("HOST:NOT_FOUND", $hostname);
+        $errors += $logger->auto( "HOST:NOT_FOUND", $hostname );
         goto DONE;
     }
 
     my @answers = ();
-    push @answers, $ipv4->answer if ($ipv4 && scalar($ipv4->answer));
-    push @answers, $ipv6->answer if ($ipv6 && scalar($ipv6->answer));
+    push @answers, $ipv4->answer if ( $ipv4 && scalar( $ipv4->answer ) );
+    push @answers, $ipv6->answer if ( $ipv6 && scalar( $ipv6->answer ) );
 
     # REQUIRE: Host must not point to a CNAME
-    foreach my $rr (@answers) {
-        if ($rr->type eq "CNAME") {
-            $errors += $logger->auto("HOST:CNAME_FOUND", $hostname);
+    foreach my $rr ( @answers ) {
+        if ( $rr->type eq "CNAME" ) {
+            $errors += $logger->auto( "HOST:CNAME_FOUND", $hostname );
             goto DONE;
         }
     }
 
     # REQUIRE: All host addresses must be valid
-    foreach my $rr (@answers) {
-        if ($rr->type eq "A" or $rr->type eq "AAAA") {
-            if (my $tmp = $parent->address->test($rr->address)) {
+    foreach my $rr ( @answers ) {
+        if ( $rr->type eq "A" or $rr->type eq "AAAA" ) {
+            if ( my $tmp = $parent->address->test( $rr->address ) ) {
                 $errors += $tmp;
                 goto DONE;
             }
@@ -89,7 +90,7 @@ sub test {
     }
 
   DONE:
-    $logger->auto("HOST:END", $hostname);
+    $logger->auto( "HOST:END", $hostname );
     $logger->module_stack_pop();
 
     return $errors;
@@ -100,15 +101,15 @@ sub host_syntax {
     my $hostname = shift;
 
     return 0 unless $self->parent->config->should_run;
-    return 0 unless defined($hostname);
+    return 0 unless defined( $hostname );
 
-    my @labels = split(/\./, $hostname, -1);
+    my @labels = split( /\./, $hostname, -1 );
 
-    return 0 unless scalar(@labels) > 0;
+    return 0 unless scalar( @labels ) > 0;
 
     $hostname .= '.' if $hostname !~ /\.$/;
 
-    if ($labels[-1] eq '') {
+    if ( $labels[-1] eq '' ) {
         pop @labels;    # Empty label for root zone.
     }
 
@@ -123,23 +124,22 @@ sub host_syntax {
 
     # REQUIRE: RFC 3696 spells out that the top-level label may not be
     #          all-numeric
-    if (length($hostname) > 254) {
-        return $self->logger->auto("HOST:ILLEGAL_NAME", $hostname, "Too long");
+    if ( length( $hostname ) > 254 ) {
+        return $self->logger->auto( "HOST:ILLEGAL_NAME", $hostname, "Too long" );
     }
 
-    foreach my $label (@labels) {
-        unless ($label =~ m|^[a-z0-9]|i
+    foreach my $label ( @labels ) {
+        unless ( $label =~ m|^[a-z0-9]|i
             && $label =~ m|^.[-a-z0-9]*.?$|i
             && $label =~ m|[a-z0-9]$|i
-            && length($label) <= 63)
+            && length( $label ) <= 63 )
         {
-            return $self->logger->auto("HOST:ILLEGAL_NAME", $hostname, $label);
+            return $self->logger->auto( "HOST:ILLEGAL_NAME", $hostname, $label );
         }
     }
 
-    unless ($labels[-1] =~ m|[a-z]|i) {
-        return $self->logger->auto("HOST:ILLEGAL_NAME", $hostname,
-            "Top all-numeric");
+    unless ( $labels[-1] =~ m|[a-z]|i ) {
+        return $self->logger->auto( "HOST:ILLEGAL_NAME", $hostname, "Top all-numeric" );
     }
 
     return 0;
