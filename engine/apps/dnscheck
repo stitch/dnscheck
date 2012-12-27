@@ -79,8 +79,9 @@ sub main {
     }
 
     my $extras = {};
+
     $extras->{logging}{interactive} = 1;
-    $extras->{logging}{min_level}   = uc($level);
+    $extras->{logging}{min_level}   = uc($level) if $level;
     $extras->{debug} = $debug;
 
     my $conf = {};
