@@ -95,11 +95,11 @@ is_deeply(
 $dc = new_ok('DNSCheck' => [{ configdir => './t/config' }]);
 set_flags($dc, undef, 1, undef);
 $dc->zone->test('iis.se');
-ok(scalar(@{$dc->logger->export}) > 550, 'IPv6-only tests');
+ok(scalar(@{$dc->logger->export}) > 540, 'IPv6-only tests');
 
 $dc = new_ok('DNSCheck' => [{ configdir => './t/config' }]);
 set_flags($dc, 1, undef, undef);
 $dc->zone->test('iis.se');
-ok(scalar(@{$dc->logger->export}) > 600, 'IPv4-only tests');
+ok(scalar(@{$dc->logger->export}) > 580, 'IPv4-only tests');
 
 done_testing();
