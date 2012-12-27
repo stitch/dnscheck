@@ -33,6 +33,7 @@ package DNSCheck::Test::Common;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use Carp;
 

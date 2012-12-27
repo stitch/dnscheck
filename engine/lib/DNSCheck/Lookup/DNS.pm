@@ -31,6 +31,7 @@
 package DNSCheck::Lookup::DNS;
 
 use strict;
+use utf8;
 use warnings;
 require 5.010001;
 

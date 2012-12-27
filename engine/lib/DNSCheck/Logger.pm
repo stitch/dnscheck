@@ -33,6 +33,7 @@ package DNSCheck::Logger;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use Time::HiRes qw(time);
 use DNSCheck::Locale;

@@ -33,6 +33,7 @@ package DNSCheck::Lookup::Resolver;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use YAML;
 use Net::IP;

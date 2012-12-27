@@ -31,6 +31,7 @@ package DNSCheck::Config;
 
 require 5.010001;
 use strict;
+use utf8;
 use warnings;
 
 use File::Spec::Functions;

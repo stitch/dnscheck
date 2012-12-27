@@ -33,6 +33,7 @@ package DNSCheck::Locale;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use overload bool => \&_to_boolean;
 

@@ -33,6 +33,7 @@ package DNSCheck::Test::Connectivity;
 use 5.010001;
 use warnings;
 use strict;
+use utf8;
 use Carp;
 use Net::IP;
 use List::Util qw[max];

@@ -33,6 +33,7 @@ package DNSCheck::Lookup::ASN;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use Net::DNS;
 use Net::IP;
