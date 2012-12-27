@@ -58,7 +58,7 @@ sub new {
     my $loglevels = $config->get( 'loglevels' );
 
     $self->{interactive} = $config->get( 'logging' )->{interactive};
-    $self->{min_level}   = $config->get( 'logging' )->{min_level};
+    $self->{min_level}   = $config->get( 'logging' )->{min_level} // 'DEBUG';
     $self->{debug}       = $config->get( 'debug' );
 
     if ( $loglevels ) {
