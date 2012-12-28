@@ -125,6 +125,15 @@ messages:
     args: 1
     descr: 'The SOA serial is not the same on all name servers. This is usually due to misconfiguration, but can sometimes be the result of slow zone propagation to secondary name servers.'
     format: '%s different serials found.'
+  CONSISTENCY:MULTIPLE_NS_SETS:
+      args: 1
+      format: 'The listed nameservers for %s does not all report the same set of nameservers.'
+  CONSISTENCY:NS_SETS_OK:
+      args: 1
+      format: 'The listed nameservers for %s all report the same set of nameservers.'
+  CONSISTENCY:NS_SET_AT:
+      args: 2
+      format: 'Nameserver at %s reports NS set %s'
   DELEGATION:BEGIN:
     args: 1
     format: Begin testing delegation for %s.
