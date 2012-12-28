@@ -30,7 +30,7 @@
 
 package DNSCheck::Test::Consistency;
 
-require 5.010001;
+use 5.010001;
 use warnings;
 use strict;
 use utf8;
@@ -116,10 +116,48 @@ sub test {
     }
 
   DONE:
+
+    $self->test_nssets( $zone );
+
     $logger->auto( "CONSISTENCY:END", $zone );
     $logger->module_stack_pop();
 
     return 0;
+}
+
+sub test_nssets {
+    my $self = shift;
+    my $zone = shift;
+
+    my $parent = $self->parent;
+    my $qclass = $self->qclass;
+    my $logger = $self->logger;
+    my $errors = 0;
+
+    return 0 unless $parent->config->should_run;
+
+    my @parent_ns = $parent->dns->get_nameservers_at_parent( $zone, $qclass );
+    my %sets;
+
+    foreach my $nsname ( @parent_ns ) {
+        my @addrs = $parent->dns->find_addresses( $nsname, $qclass );
+        foreach my $addr ( @addrs ) {
+            my $p = $parent->dns->query_explicit( $zone, $qclass, 'NS', $addr );
+            if ( $p ) {
+                my @nsset = sort map { $_->string } grep { $_->type eq 'NS' } $p->answer;
+                my $tmp = join( '|', @nsset );
+                $logger->auto( 'CONSISTENCY:NS_SET_AT', $addr, $tmp );
+                $sets{$tmp} += 1;
+            }
+        }
+    }
+
+    if ( keys %sets > 1 ) {
+        return $logger->auto( 'CONSISTENCY:MULTIPLE_NS_SETS', $zone );
+    }
+    else {
+        return $logger->auto( 'CONSISTENCY:NS_SETS_OK', $zone );
+    }
 }
 
 1;
