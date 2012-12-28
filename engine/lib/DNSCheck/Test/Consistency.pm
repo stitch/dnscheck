@@ -66,7 +66,7 @@ sub test {
 
     foreach my $ns ( @ns_parent, @ns_child ) {
         foreach my $address ( $parent->dns->find_addresses( $ns, $qclass ) ) {
-            my $ip = new Net::IP( $address );
+            my $ip = Net::IP->new( $address );
 
             if ( $ip->version == 4 and $parent->config->get( "net" )->{ipv4} ) {
                 $nameservers{$address} = $address;
