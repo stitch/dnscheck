@@ -1,12 +1,13 @@
 require 5.010001;
 
+use warnings;
+use strict;
+use utf8;
+
 use ExtUtils::MakeMaker;
 use File::ShareDir::Install;
 
-my @exefiles = ( 'apps/dnscheck', 'apps/dnscheck-preflight',
-                 'apps/dnscheck-dispatcher', 'apps/dnscheck-zonediff',
-                 'apps/dnscheck-12hourmailer', 'apps/dnscheck-hostsyntax',
-                 'apps/dnscheck-dnssecmailer', );
+my @exefiles = ( 'apps/dnscheck', 'apps/dnscheck-preflight', 'apps/dnscheck-dispatcher', 'apps/dnscheck-zonediff', 'apps/dnscheck-12hourmailer', 'apps/dnscheck-hostsyntax', 'apps/dnscheck-dnssecmailer', );
 
 install_share dist => 'locale';
 install_share dist => 'config';
@@ -38,7 +39,7 @@ WriteMakefile(
         'File::ShareDir::Install' => 0,
         'File::ShareDir'          => 0,
         'Config::Any'             => 0,
-	    'YAML::XS'                => 0,
+        'YAML::XS'                => 0,
         'List::MoreUtils'         => 0,
     },
     'EXE_FILES' => \@exefiles,
@@ -46,11 +47,12 @@ WriteMakefile(
     'SIGN'      => 0,
 );
 
+## no critic (Subroutines::ProhibitQualifiedSubDeclarations)
 sub MY::postamble {
 
     package MY;
     my $self = shift;
-    my @ret = File::ShareDir::Install::postamble( $self );
+    my @ret  = File::ShareDir::Install::postamble( $self );
 
     my $tmp = qq#
 coverage:

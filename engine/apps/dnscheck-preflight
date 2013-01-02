@@ -1,14 +1,20 @@
 #!/usr/bin/perl -l
 
+use warnings;
+use strict;
+use utf8;
+use 5.01001;
+
 use DNSCheck;
 
 my $dc   = DNSCheck->new;
 my $dns  = $dc->dns;
 my $name = $ARGV[0];
 
-if ($dc->host->host_syntax($name) == 0 and $dns->preflight_check($name)) {
+if ( $dc->host->host_syntax( $name ) == 0 and $dns->preflight_check( $name ) ) {
     print "TRUE";
-} else {
+}
+else {
     print "FALSE";
 }
 

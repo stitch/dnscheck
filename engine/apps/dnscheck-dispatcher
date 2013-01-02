@@ -27,8 +27,8 @@
 # IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 ######################################################################
-use 5.008;
-
+use 5.01001;
+use utf8;
 use warnings;
 use strict;
 
@@ -64,10 +64,10 @@ use vars qw[
 $debug     = 0;
 $verbose   = 0;
 $check     = DNSCheck->new;
-$limit     = $check->config->get("daemon")->{maxchild};
-$savelevel = $check->config->get("daemon")->{savelevel} || 'INFO';
-$user      = $check->config->get("daemon")->{user};
-$group     = $check->config->get("daemon")->{group};
+$limit     = $check->config->get( "daemon" )->{maxchild};
+$savelevel = $check->config->get( "daemon" )->{savelevel} || 'INFO';
+$user      = $check->config->get( "daemon" )->{user};
+$group     = $check->config->get( "daemon" )->{group};
 $running   = 1;
 $restart   = 0;
 $syslog    = 1;
@@ -95,101 +95,97 @@ sub slog {
     my $tries    = 0;
 
     # See perldoc on sprintf for why we have to write it like this
-    my $msg = sprintf($_[0], @_[1 .. $#_]);
+    my $msg = sprintf( $_[0], @_[ 1 .. $#_ ] );
 
-    printf("%s (%d): %s\n", uc($priority), $$, $msg) if $debug;
+    printf( "%s (%d): %s\n", uc( $priority ), $$, $msg ) if $debug;
 
   TRY:
     eval {
-        if ($syslog)
-        {
-            syslog($priority, @_);
-        } else {
-            printf STDERR "%s (%d): %s\n", uc($priority), $$, $msg;
+        if ( $syslog ) {
+            syslog( $priority, @_ );
+        }
+        else {
+            printf STDERR "%s (%d): %s\n", uc( $priority ), $$, $msg;
         }
     };
-    if ($@) {
-        if ($tries < 5) {
+    if ( $@ ) {
+        if ( $tries < 5 ) {
             print STDERR "Trying to reconnect to syslogd...\n";
-            sleep(0.5);
+            sleep( 0.5 );
             $tries += 1;
-            openlog($check->config->get("syslog")->{ident},
-                'pid', $check->config->get("syslog")->{facility});
+            openlog( $check->config->get( "syslog" )->{ident}, 'pid', $check->config->get( "syslog" )->{facility} );
             goto TRY;
-        } else {
-            print STDERR
-              "SYSLOG CONNECTION LOST. Switching to stderr logging.\n";
+        }
+        else {
+            print STDERR "SYSLOG CONNECTION LOST. Switching to stderr logging.\n";
             $syslog = 0;
-            printf STDERR "%s (%d): %s\n", uc($priority), $$, $msg;
+            printf STDERR "%s (%d): %s\n", uc( $priority ), $$, $msg;
         }
     }
 }
 
 sub do_kill {
-    my ($pidfile, $signal) = @_;
-    $signal = 15 unless defined($signal);
+    my ( $pidfile, $signal ) = @_;
+    $signal = 15 unless defined( $signal );
 
     open my $fh, '<', $pidfile or die "Failed to open $pidfile: $!\n";
-    my ($pid) = <$fh>;
-    
+    my ( $pid ) = <$fh>;
+
     kill $signal, $pid;
 }
 
 sub setup {
-    my $errfile = $check->config->get("daemon")->{errorlog};
-    my $pidfile = $check->config->get("daemon")->{pidfile};
+    my $errfile = $check->config->get( "daemon" )->{errorlog};
+    my $pidfile = $check->config->get( "daemon" )->{pidfile};
     my $uid;
     my $gid;
 
     my $kill = 0;
 
-    if ($< == 0 and !defined($user)) {
+    if ( $< == 0 and !defined( $user ) ) {
         die "Started as root, but no user to run as specified. Exiting.\n";
-    } elsif ($< == 0) {
-        $uid = (getpwnam($user))[2];
-        $gid = (getgrnam($group))[2] if $group;
+    }
+    elsif ( $< == 0 ) {
+        $uid = ( getpwnam( $user ) )[2];
+        $gid = ( getgrnam( $group ) )[2] if $group;
 
-        unless (defined($uid)) {
+        unless ( defined( $uid ) ) {
             die "Failed to look up uid for user $user. Exiting.\n";
         }
     }
 
     @saved_argv = @ARGV;    # We'll use this if we're asked to restart ourselves
     GetOptions(
-        'debug' => \$debug,
+        'debug'   => \$debug,
         'verbose' => \$verbose,
-        'kill+' => \$kill,
+        'kill+'   => \$kill,
     );
-    
-    if ($kill) {
-        do_kill($pidfile, ($kill>1)?9:15);
-        exit(0);
-    }
-    
-    openlog($check->config->get("syslog")->{ident},
-        'pid', $check->config->get("syslog")->{facility});
-    slog 'info', "$0 starting with %d maximum children.",
-      $check->config->get("daemon")->{maxchild};
-    slog 'info', 'IPv4 disabled.' unless $check->config->get("net")->{ipv4};
-    slog 'info', 'IPv6 disabled.' unless $check->config->get("net")->{ipv6};
-    slog 'info', 'SMTP disabled.' unless $check->config->get("net")->{smtp};
-    slog 'info', 'Logging as %s to facility %s.',
-      $check->config->get("syslog")->{ident},
-      $check->config->get("syslog")->{facility};
 
-    unless ($check->dbh) {
+    if ( $kill ) {
+        do_kill( $pidfile, ( $kill > 1 ) ? 9 : 15 );
+        exit( 0 );
+    }
+
+    openlog( $check->config->get( "syslog" )->{ident}, 'pid', $check->config->get( "syslog" )->{facility} );
+    slog 'info', "$0 starting with %d maximum children.", $check->config->get( "daemon" )->{maxchild};
+    slog 'info', 'IPv4 disabled.' unless $check->config->get( "net" )->{ipv4};
+    slog 'info', 'IPv6 disabled.' unless $check->config->get( "net" )->{ipv6};
+    slog 'info', 'SMTP disabled.' unless $check->config->get( "net" )->{smtp};
+    slog 'info', 'Logging as %s to facility %s.', $check->config->get( "syslog" )->{ident}, $check->config->get( "syslog" )->{facility};
+
+    unless ( $check->dbh ) {
         die "Failed to connect to database. Exiting.\n";
     }
     detach() unless $debug;
     open STDERR, '>>', $errfile or die "Failed to open error log: $!";
-    printf STDERR "%s starting at %s\n", $0, scalar(localtime);
-    open PIDFILE, '>', $pidfile or die "Failed to open PID file: $!";
-    print PIDFILE $$;
-    close PIDFILE;
+    printf STDERR "%s starting at %s\n", $0, scalar( localtime );
+    open my $PIDFILE, '>', $pidfile or die "Failed to open PID file: $!";
+    print $PIDFILE $$;
+    close $PIDFILE;
 
-    if ($< == 0) {
-        setuid($uid);
-        setgid($gid) if $gid;
+    if ( $< == 0 ) {
+        setuid( $uid );
+        setgid( $gid ) if $gid;
     }
 
     $SIG{CHLD} = \&REAPER;
@@ -200,20 +196,19 @@ sub setup {
     };
 }
 
-sub detach
-{  # Instead of using ioctls and setfoo calls we use the old double-fork method.
+sub detach {    # Instead of using ioctls and setfoo calls we use the old double-fork method.
     my $pid;
 
     # Once...
     $pid = fork;
     exit if $pid;
-    die "Fork failed: $!" unless defined($pid);
+    die "Fork failed: $!" unless defined( $pid );
 
     # ...and again
     $pid = fork;
     exit if $pid;
-    die "Fork failed: $!" unless defined($pid);
-    slog('info', 'Detached.');
+    die "Fork failed: $!" unless defined( $pid );
+    slog( 'info', 'Detached.' );
 }
 
 # Clean up residue from earlier run(s), if any.
@@ -221,30 +216,25 @@ sub inital_cleanup {
     my $dbh;
 
     eval { $dbh = $check->dbh; };
-    if ($@) {
+    if ( $@ ) {
         slog 'critical', 'Database not available. Exiting.';
-        exit(1);
+        exit( 1 );
     }
 
-    $dbh->do(
-q[UPDATE queue SET inprogress = NULL WHERE inprogress IS NOT NULL AND tester_pid IS NULL]
-    );
-    my $c = $dbh->selectall_hashref(
-q[SELECT id, domain, tester_pid FROM queue WHERE inprogress IS NOT NULL AND tester_pid IS NOT NULL],
-        'tester_pid'
-    );
-    foreach my $k (keys %$c) {
-        if (kill 0, $c->{$k}{tester_pid}) {
+    $dbh->do( q[UPDATE queue SET inprogress = NULL WHERE inprogress IS NOT NULL AND tester_pid IS NULL] );
+    my $c = $dbh->selectall_hashref( q[SELECT id, domain, tester_pid FROM queue WHERE inprogress IS NOT NULL AND tester_pid IS NOT NULL], 'tester_pid' );
+    foreach my $k ( keys %$c ) {
+        if ( kill 0, $c->{$k}{tester_pid} ) {
 
-      # The process running this test is still alive, so just remove it from the
-      # queue.
-            $dbh->do(q[DELETE FROM queue WHERE id = ?], undef, $c->{$k}{id});
+            # The process running this test is still alive, so just remove it from the
+            # queue.
+            $dbh->do( q[DELETE FROM queue WHERE id = ?], undef, $c->{$k}{id} );
             slog 'info', 'Removed %s from queue', $c->{$k}{domain};
-        } else {
+        }
+        else {
 
             # The process running this test has died, so reschedule it
-            $dbh->do(q[UPDATE queue SET inprogress = NULL WHERE id = ?],
-                undef, $c->{$k}{id});
+            $dbh->do( q[UPDATE queue SET inprogress = NULL WHERE id = ?], undef, $c->{$k}{id} );
             slog 'info', 'Rescheduled test for %s', $c->{$k}{domain};
         }
     }
@@ -262,27 +252,26 @@ sub dispatch {
     my $fake_glue;
     my $priority;
 
-    if (scalar keys %running < $limit) {
-        ($domain, $id, $source, $source_data, $fake_glue, $priority) =
-          get_entry();
-        slog 'debug', "Fetched $domain from database." if defined($domain);
-    } else {
+    if ( scalar keys %running < $limit ) {
+        ( $domain, $id, $source, $source_data, $fake_glue, $priority ) = get_entry();
+        slog 'debug', "Fetched $domain from database." if defined( $domain );
+    }
+    else {
 
         # slog 'info', 'Process limit reached.';
     }
 
-    if (defined($domain)) {
-        unless (defined($problem{$domain}) and $problem{$domain} >= 5) {
-            process($domain, $id, $source, $source_data, $fake_glue, $priority);
-        } else {
-            slog 'error',
-"Testing $domain caused repeated abnormal termination of children. Assuming bug. Exiting.";
+    if ( defined( $domain ) ) {
+        unless ( defined( $problem{$domain} ) and $problem{$domain} >= 5 ) {
+            process( $domain, $id, $source, $source_data, $fake_glue, $priority );
+        }
+        else {
+            slog 'error', "Testing $domain caused repeated abnormal termination of children. Assuming bug. Exiting.";
             $running = 0;
         }
-        return
-          0.0
-          ;  # There was something in the queue, so check for more without delay
-    } else {
+        return 0.0;    # There was something in the queue, so check for more without delay
+    }
+    else {
         return 0.25;    # Queue empty or process slots full. Wait a little.
     }
 }
@@ -291,55 +280,47 @@ sub get_entry {
     my $dbh;
 
     eval { $dbh = $check->dbh; };
-    if ($@) {
+    if ( $@ ) {
         slog 'critical', 'Database not available. Exiting.';
-        exit(1);
+        exit( 1 );
     }
 
-    my ($id, $domain, $source, $source_data, $fake_glue, $priority);
+    my ( $id, $domain, $source, $source_data, $fake_glue, $priority );
 
     eval {
         $dbh->begin_work;
-        ($id, $domain, $source, $source_data, $fake_glue, $priority) =
-          $dbh->selectrow_array(
-q[SELECT id, domain, source_id, source_data, fake_parent_glue, priority FROM queue WHERE inprogress IS NULL AND priority = (SELECT MAX(priority) FROM queue WHERE inprogress IS NULL) ORDER BY id ASC LIMIT 1 FOR UPDATE]
-          );
+        ( $id, $domain, $source, $source_data, $fake_glue, $priority ) = $dbh->selectrow_array( q[SELECT id, domain, source_id, source_data, fake_parent_glue, priority FROM queue WHERE inprogress IS NULL AND priority = (SELECT MAX(priority) FROM queue WHERE inprogress IS NULL) ORDER BY id ASC LIMIT 1 FOR UPDATE] );
         slog 'debug', "Got $id, $domain from database."
-          if (defined($domain) or defined($id));
-        $dbh->do(q[UPDATE queue SET inprogress = NOW() WHERE id = ?],
-            undef, $id);
+          if ( defined( $domain ) or defined( $id ) );
+        $dbh->do( q[UPDATE queue SET inprogress = NOW() WHERE id = ?], undef, $id );
         $dbh->commit;
     };
-    if ($@) {
+    if ( $@ ) {
         my $err = $@;
         slog 'warning', "Database error in get_entry: $err";
 
-        if ($err =~
-/(DBD driver has not implemented the AutoCommit attribute)|(Lost connection to MySQL server during query)/
-            and defined($id))
+        if ( $err =~ /(DBD driver has not implemented the AutoCommit attribute)|(Lost connection to MySQL server during query)/
+            and defined( $id ) )
         {
 
             # Database handle went away. Try to recover.
-            slog 'info',
-              "Known problem. Trying to clear inprogress for queue id $id.";
+            slog 'info', "Known problem. Trying to clear inprogress for queue id $id.";
             $dbh = $check->dbh;
-            $dbh->do(q[UPDATE queue SET inprogress = NULL WHERE id = ?],
-                undef, $id);
+            $dbh->do( q[UPDATE queue SET inprogress = NULL WHERE id = ?], undef, $id );
         }
 
-        if ($err =~ m|Already in a transaction|) {
-            slog 'critical',
-              'Serious problem. Sleeping, then trying to restart.';
+        if ( $err =~ m|Already in a transaction| ) {
+            slog 'critical', 'Serious problem. Sleeping, then trying to restart.';
             $running = 0;
             $restart = 1;
-            sleep(15);
+            sleep( 15 );
             return;
         }
 
-        return undef;
+        return;
     }
 
-    return ($domain, $id, $source, $source_data, $fake_glue, $priority);
+    return ( $domain, $id, $source, $source_data, $fake_glue, $priority );
 }
 
 sub process {
@@ -352,13 +333,14 @@ sub process {
 
     my $pid = fork;
 
-    if ($pid) {    # True values, so parent
+    if ( $pid ) {    # True values, so parent
         $running{$pid} = $domain;
         slog 'debug', "Child process $pid has been started.";
-    } elsif ($pid == 0) {    # Zero value, so child
-        running_in_child($domain, $id, $source, $source_data, $fake_glue,
-            $priority);
-    } else {                 # Undefined value, so error
+    }
+    elsif ( $pid == 0 ) {    # Zero value, so child
+        running_in_child( $domain, $id, $source, $source_data, $fake_glue, $priority );
+    }
+    else {                   # Undefined value, so error
         die "Fork failed: $!";
     }
 }
@@ -372,40 +354,38 @@ sub running_in_child {
     my $priority    = shift;
 
     # Reuse the old configuration, but get new everything else.
-    my $dc  = DNSCheck->new({ with_config_object => $check->config });
+    my $dc  = DNSCheck->new( { with_config_object => $check->config } );
     my $dbh = $dc->dbh;
     my $log = $dc->logger;
 
-    setpriority(0, $$, 20 - 2 * $priority);
+    setpriority( 0, $$, 20 - 2 * $priority );
 
-    if (defined($fake_glue)) {
-        my @ns = split(/\s+/, $fake_glue);
-        foreach my $n (@ns) {
-            my ($name, $ip) = split(m|/|, $n);
-            if ($name =~ /^ds:/) {
+    if ( defined( $fake_glue ) ) {
+        my @ns = split( /\s+/, $fake_glue );
+        foreach my $n ( @ns ) {
+            my ( $name, $ip ) = split( m|/|, $n );
+            if ( $name =~ /^ds:/ ) {
                 $ip =~ s/_/ /g;
-                $dc->add_fake_ds($ip);    # Not actually IP in this case.
-            } else {
-                $dc->add_fake_glue($domain, $name, $ip);
+                $dc->add_fake_ds( $ip );    # Not actually IP in this case.
+            }
+            else {
+                $dc->add_fake_glue( $domain, $name, $ip );
             }
         }
     }
 
-   # On some OS:s (including Ubuntu Linux), this is visible in the process list.
+    # On some OS:s (including Ubuntu Linux), this is visible in the process list.
     $0 = "dispatcher: testing $domain (queue id $id)";
 
-    $dbh->do(q[UPDATE queue SET tester_pid = ? WHERE id = ?], undef, $$, $id);
-    $dbh->do(
-q[INSERT INTO tests (domain,begin, source_id, source_data) VALUES (?,NOW(),?,?)],
-        undef, $domain, $source, $source_data
-    );
+    $dbh->do( q[UPDATE queue SET tester_pid = ? WHERE id = ?], undef, $$, $id );
+    $dbh->do( q[INSERT INTO tests (domain,begin, source_id, source_data) VALUES (?,NOW(),?,?)], undef, $domain, $source, $source_data );
 
     my $test_id = $dbh->{'mysql_insertid'};
     slog 'debug', "$$ running test number $test_id.";
     my $line = 0;
 
     # This line hides all the actual useful work.
-    $dc->zone->test($domain);
+    $dc->zone->test( $domain );
 
     my $sth = $dbh->prepare(
         q[
@@ -415,30 +395,23 @@ q[INSERT INTO tests (domain,begin, source_id, source_data) VALUES (?,NOW(),?,?)]
           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         ]
     );
-    while (defined(my $e = $log->get_next_entry)) {
-        next if ($levels{ $e->{level} } < $levels{$savelevel});
+    while ( defined( my $e = $log->get_next_entry ) ) {
+        next if ( $levels{ $e->{level} } < $levels{$savelevel} );
         $line++;
-        my $time = strftime("%Y-%m-%d %H:%M:%S", localtime($e->{timestamp}));
-        $sth->execute(
-            $test_id,               $line,        $e->{module_id},
-            $e->{parent_module_id}, $time,        $e->{level},
-            $e->{tag},              $e->{arg}[0], $e->{arg}[1],
-            $e->{arg}[2],           $e->{arg}[3], $e->{arg}[4],
-            $e->{arg}[5],           $e->{arg}[6], $e->{arg}[7],
-            $e->{arg}[8],           $e->{arg}[9],
-        );
+        my $time = strftime( "%Y-%m-%d %H:%M:%S", localtime( $e->{timestamp} ) );
+        $sth->execute( $test_id, $line, $e->{module_id}, $e->{parent_module_id}, $time, $e->{level}, $e->{tag}, $e->{arg}[0], $e->{arg}[1], $e->{arg}[2], $e->{arg}[3], $e->{arg}[4], $e->{arg}[5], $e->{arg}[6], $e->{arg}[7], $e->{arg}[8], $e->{arg}[9], );
     }
 
     $dbh->do(
-q[UPDATE tests SET end = NOW(), count_critical = ?, count_error = ?, count_warning = ?, count_notice = ?, count_info = ?
+        q[UPDATE tests SET end = NOW(), count_critical = ?, count_error = ?, count_warning = ?, count_notice = ?, count_info = ?
   WHERE id = ?],
-        undef, $log->count_critical, $log->count_error, $log->count_warning,
-        $log->count_notice, $log->count_info, $test_id
+        undef,              $log->count_critical, $log->count_error, $log->count_warning,
+        $log->count_notice, $log->count_info,     $test_id
     );
 
-# Everything went well, so exit nicely (if they didn't go well, we've already died not-so-nicely).
+    # Everything went well, so exit nicely (if they didn't go well, we've already died not-so-nicely).
     slog 'debug', "$$ about to exit nicely.";
-    exit(0);
+    exit( 0 );
 }
 
 ################################################################
@@ -446,20 +419,19 @@ q[UPDATE tests SET end = NOW(), count_critical = ?, count_error = ?, count_warni
 ################################################################
 
 sub monitor_children {
-    my @pids = keys
-      %reaped;    # Can't trust %reaped to stay static while we work through it
+    my @pids = keys %reaped;    # Can't trust %reaped to stay static while we work through it
 
-    foreach my $pid (@pids) {
+    foreach my $pid ( @pids ) {
         slog 'debug', "Child process $pid has died.";
 
         my $domain   = $running{$pid};
         my $exitcode = $reaped{$pid};
         delete $running{$pid};
         delete $reaped{$pid};
-        cleanup($domain, $exitcode, $pid);
+        cleanup( $domain, $exitcode, $pid );
     }
 
-    if (defined($exit_timeout) and time() - $exit_timeout > 300) {
+    if ( defined( $exit_timeout ) and time() - $exit_timeout > 300 ) {
         %running = ();
     }
 }
@@ -471,41 +443,33 @@ sub cleanup {
     my $dbh;
 
     eval { $dbh = $check->dbh; };
-    if ($@) {
+    if ( $@ ) {
         slog 'critical', "Cannot connect to database. Exiting.";
-        exit(1);
+        exit( 1 );
     }
 
     my $status = $exitcode >> 8;
     my $signal = $exitcode & 127;
 
-    if ($status == 0) {
+    if ( $status == 0 ) {
 
         # Child died nicely.
-      AGAIN: eval {
-            $dbh->do(q[DELETE FROM queue WHERE domain = ? AND tester_pid = ?],
-                undef, $domain, $pid);
-        };
-        if ($@)
-        { # mysqld dumped us. Get a new handle and try again, after a little pause
-            slog 'warning',
-              "Failed to delete queue entry for $domain. Retrying.";
-            sleep(0.25);
+      AGAIN: eval { $dbh->do( q[DELETE FROM queue WHERE domain = ? AND tester_pid = ?], undef, $domain, $pid ); };
+        if ( $@ ) {    # mysqld dumped us. Get a new handle and try again, after a little pause
+            slog 'warning', "Failed to delete queue entry for $domain. Retrying.";
+            sleep( 0.25 );
             $dbh = $check->dbh;
             goto AGAIN;
         }
 
-    } else {
+    }
+    else {
 
         # Child blew up. Clean up.
         $problem{$domain} += 1;
         slog 'warning', "Unclean exit when testing $domain (status $status).";
-        $dbh->do(q[UPDATE queue SET inprogress = NULL WHERE domain = ?],
-            undef, $domain);
-        $dbh->do(
-q[DELETE FROM tests WHERE begin IS NOT NULL AND end IS NULL AND domain = ?],
-            undef, $domain
-        );
+        $dbh->do( q[UPDATE queue SET inprogress = NULL WHERE domain = ?],                      undef, $domain );
+        $dbh->do( q[DELETE FROM tests WHERE begin IS NOT NULL AND end IS NULL AND domain = ?], undef, $domain );
     }
 }
 
@@ -513,7 +477,7 @@ q[DELETE FROM tests WHERE begin IS NOT NULL AND end IS NULL AND domain = ?],
 sub REAPER {
     my $child;
 
-    while (($child = waitpid(-1, WNOHANG)) > 0) {
+    while ( ( $child = waitpid( -1, WNOHANG ) ) > 0 ) {
         $reaped{$child} = $?;
     }
     $SIG{CHLD} = \&REAPER;
@@ -526,22 +490,22 @@ sub REAPER {
 sub main {
     setup();
     inital_cleanup();
-    while ($running) {
+    while ( $running ) {
         my $skip = dispatch();
         monitor_children();
-        sleep($skip);
+        sleep( $skip );
     }
     slog 'info', "Waiting for %d children to exit.", scalar keys %running;
     $exit_timeout = time();
-    monitor_children until (keys %running == 0);
-    unless (unlink $check->config->get("daemon")->{pidfile}) {
+    monitor_children until ( keys %running == 0 );
+    unless ( unlink $check->config->get( "daemon" )->{pidfile} ) {
         warn "Failed to remove PID file: $!\n";
     }
     slog 'info', "$0 exiting normally.";
     printf STDERR "%s exiting normally.\n", $0;
-    if ($restart) {
+    if ( $restart ) {
         slog 'info', "Attempting to restart myself (as $0 @saved_argv).";
-        exec($0, @saved_argv);
+        exec( $0, @saved_argv );
         warn "Exec failed: $!";
     }
 }
