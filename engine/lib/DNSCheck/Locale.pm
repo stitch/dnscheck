@@ -50,13 +50,11 @@ sub new {
     $self->{lang}     = $config->{locale_id};
     $self->{messages} = $config->{messages};
 
-    bless $self, $class;
+    return bless $self, $class;
 }
 
 sub expand {
-    my $self = shift;
-    my $tag  = shift;
-    my @args = @_;
+    my ( $self, $tag, @args ) = @_;
 
     my $format = $self->{messages}{$tag}{format};
 

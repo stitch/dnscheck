@@ -39,6 +39,7 @@ use DBI;
 use Carp;
 use List::Util qw[reduce max min];
 use Net::DNS;
+use Net::DNS::RR;
 use Storable qw[thaw];
 use MIME::Base64;
 
@@ -109,6 +110,8 @@ sub flush {
 
     # should the ASN cache be flushed as well?
     #$self->{context}->{asn}->flush();
+
+    return;
 }
 
 ######################################################################
@@ -271,6 +274,8 @@ sub log_nameserver_times {
         my $sum = reduce { $a + $b } @$v;
         $self->logger->auto( 'NSTIME:AVERAGE', $zone, $k, scalar( @$v ), sprintf( '%0.3f', 1000 * ( $sum / @$v ) ), sprintf( '%0.3f', 1000 * min( @$v ) ), sprintf( '%0.3f', 1000 * max( @$v ) ), sprintf( '%0.3f', 1000 * _stddev( @$v ) ), );
     }
+
+    return;
 }
 
 ######################################################################

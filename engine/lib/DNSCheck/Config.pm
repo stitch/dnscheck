@@ -43,6 +43,7 @@ use Storable qw(dclone);
 use File::ShareDir 'dist_dir';
 use Config::Any;
 
+## no critic (Subroutines::RequireArgUnpacking)
 sub new {
     my $proto = shift;
     my $class = ref( $proto ) || $proto;
@@ -89,8 +90,7 @@ sub new {
 }
 
 sub get {
-    my $self = shift;
-    my ( $key ) = @_;
+    my ( $self, $key ) = @_;
 
     my $res = $self->{$key};
     if ( ref( $res ) ) {
@@ -101,9 +101,8 @@ sub get {
 }
 
 sub put {
-    my $self = shift;
+    my ( $self, $key, $value ) = @_;
 
-    my ( $key, $value ) = @_;
     $self->{$key} = $value;
 
     return $value;
@@ -166,6 +165,8 @@ sub _hashrefcopy {
             $target->{$pkey} = $source->{$pkey};
         }
     }
+
+    return;
 }
 
 1;
