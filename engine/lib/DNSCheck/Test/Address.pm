@@ -44,44 +44,53 @@ use Net::IP 1.25;
 our @private_ipv4  = ();
 our @reserved_ipv4 = ();
 our @reserved_ipv6 = ();
+our @unsuitable_ipv4;
+our @unsuitable_ipv6;
 
 # REQUIRE: Private IPv4 Addresses (RFC 1918)
-push @private_ipv4, new Net::IP( "10.0.0.0/8" );
-push @private_ipv4, new Net::IP( "172.16.0.0/12" );
-push @private_ipv4, new Net::IP( "192.168.0.0/16" );
+push @private_ipv4, Net::IP->new( "10.0.0.0/8" );
+push @private_ipv4, Net::IP->new( "172.16.0.0/12" );
+push @private_ipv4, Net::IP->new( "192.168.0.0/16" );
 
 # REQUIRE: Special-Use IPv4 Addresses (RFC 3330)
-push @reserved_ipv4, new Net::IP( "127.0.0.0/8" );
-push @reserved_ipv4, new Net::IP( "224.0.0.0/4" );
-push @reserved_ipv4, new Net::IP( "0.0.0.0/8" );
-push @reserved_ipv4, new Net::IP( "169.254.0.0/16" );
-push @reserved_ipv4, new Net::IP( "192.0.2.0/24" );
-push @reserved_ipv4, new Net::IP( "192.88.99.0/24" );
-push @reserved_ipv4, new Net::IP( "198.18.0.0/15" );
-push @reserved_ipv4, new Net::IP( "240.0.0.0/4" );
+push @reserved_ipv4, Net::IP->new( "127.0.0.0/8" );
+push @reserved_ipv4, Net::IP->new( "224.0.0.0/4" );
+push @reserved_ipv4, Net::IP->new( "0.0.0.0/8" );
+push @reserved_ipv4, Net::IP->new( "169.254.0.0/16" );
+push @reserved_ipv4, Net::IP->new( "192.0.2.0/24" );
+push @reserved_ipv4, Net::IP->new( "198.18.0.0/15" );
+push @reserved_ipv4, Net::IP->new( "240.0.0.0/4" );
 
 # REQUIRE: Special-Use IPv4 Addresses (RFC 5735)
-push @reserved_ipv4, new Net::IP( "198.51.100.0/24" );
-push @reserved_ipv4, new Net::IP( "203.0.113.0/24" );
-push @reserved_ipv4, new Net::IP( "192.0.0.0/24" );
-push @reserved_ipv4, new Net::IP( "255.255.255.255/32" );
+push @reserved_ipv4, Net::IP->new( "198.51.100.0/24" );
+push @reserved_ipv4, Net::IP->new( "203.0.113.0/24" );
+push @reserved_ipv4, Net::IP->new( "192.0.0.0/24" );
+push @reserved_ipv4, Net::IP->new( "255.255.255.255/32" );
 
 # REQUIRE: Special-Use IPv6 Addresses (RFC 5156)
-push @reserved_ipv6, new Net::IP( "::1/128" );
-push @reserved_ipv6, new Net::IP( "ff00::/8" );
-push @reserved_ipv6, new Net::IP( "::/128" );
-push @reserved_ipv6, new Net::IP( "::ffff:0:0/96" );
-push @reserved_ipv6, new Net::IP( "fe80::/10" );
-push @reserved_ipv6, new Net::IP( "fc00::/7" );
-push @reserved_ipv6, new Net::IP( "2001:0db8::/32" );
-push @reserved_ipv6, new Net::IP( "2001:10::/28" );
+push @reserved_ipv6, Net::IP->new( "::1/128" );
+push @reserved_ipv6, Net::IP->new( "ff00::/8" );
+push @reserved_ipv6, Net::IP->new( "::/128" );
+push @reserved_ipv6, Net::IP->new( "::ffff:0:0/96" );
+push @reserved_ipv6, Net::IP->new( "fe80::/10" );
+push @reserved_ipv6, Net::IP->new( "fc00::/7" );
+push @reserved_ipv6, Net::IP->new( "2001:0db8::/32" );
+push @reserved_ipv6, Net::IP->new( "2001:10::/28" );
 
 # Discard-Only (RFC6666)
-push @reserved_ipv6, new Net::IP( '0100::/64' );
+push @reserved_ipv6, Net::IP->new( '0100::/64' );
 
 # REQUIRE: Special-Use IPv4 Addresses (RFC 6598)
 
-push @reserved_ipv4, new Net::IP( '100.64.0.0/10' );
+push @reserved_ipv4, Net::IP->new( '100.64.0.0/10' );
+
+# 6to4 anycast
+
+push @unsuitable_ipv4, Net::IP->new('192.88.99.0/24');
+
+# Teredo
+
+push @unsuitable_ipv6, Net::IP->new('2001::/32');
 
 ######################################################################
 
@@ -100,7 +109,7 @@ sub test {
     $logger->auto( "ADDRESS:BEGIN", $address );
 
     # REQUIRE: Address must be syntactically correct
-    my $ip = new Net::IP( $address );
+    my $ip = Net::IP->new( $address );
     unless ( $ip ) {
         $errors += $logger->auto( "ADDRESS:INVALID", $address );
         goto DONE;
@@ -121,6 +130,26 @@ sub test {
         foreach my $prefix ( @reserved_ipv4 ) {
             if ( $ip->overlaps( $prefix ) ) {
                 $errors += $logger->auto( "ADDRESS:RESERVED_IPV4", $address );
+                goto DONE;
+            }
+        }
+    }
+
+    # REQUIRE: Warn for unsuitable IPv4 Addresses
+    if ( $ip->version == 4 ) {
+        foreach my $prefix ( @unsuitable_ipv4 ) {
+            if ( $ip->overlaps( $prefix ) ) {
+                $errors += $logger->auto( "ADDRESS:UNSUITABLE_IPV4", $address );
+                goto DONE;
+            }
+        }
+    }
+
+    # REQUIRE: Warn for unsuitable IPv6 Addresses
+    if ( $ip->version == 6 ) {
+        foreach my $prefix ( @unsuitable_ipv6 ) {
+            if ( $ip->overlaps( $prefix ) ) {
+                $errors += $logger->auto( "ADDRESS:UNSUITABLE_IPV6", $address );
                 goto DONE;
             }
         }

@@ -37,6 +37,12 @@ has('ADDRESS:RESERVED_IPV4');
 ok($check->address->test("172.18.18.18") == 1);
 has('ADDRESS:PRIVATE_IPV4');
 
+ok($check->address->test("192.88.99.1") == 0);
+has('ADDRESS:UNSUITABLE_IPV4');
+
+ok($check->address->test("2001::1") == 0);
+has('ADDRESS:UNSUITABLE_IPV6');
+
 ok($check->address->test("::1") == 1);
 has('ADDRESS:RESERVED_IPV6');
 
