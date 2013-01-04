@@ -15,6 +15,7 @@ my %tags = map {$_->[3] => 1} @{$dc->logger->export};
 
 ok($tags{'CONSISTENCY:SOA_DIGEST_CONSISTENT'});
 ok($tags{'CONSISTENCY:SOA_SERIAL_CONSISTENT'});
+ok($tags{'CONSISTENCY:NS_SETS_OK'});
 
 $dc->logger->clear;
 $dc->consistency->test('nic.se');

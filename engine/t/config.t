@@ -26,10 +26,9 @@ SKIP: {
     skip "Failed to get an object to test", 4 unless defined( $conf );
     ok( ref( $conf )                  eq "DNSCheck::Config" );
     ok( ref( $conf->get( "net" ) )    eq "HASH" );
-    ok( $conf->get( "net" )->{"smtp"} eq 1 );
     ok( $conf->get( "hostname" )      eq hostname );
-    is( scalar(keys(%{$conf->{locale}{messages}})), 272, 'Messages are there');
-    is( scalar(keys(%{$conf->{loglevels}})), 204, 'Policy data is there');
+    is( scalar(keys(%{$conf->{locale}{messages}})), 275, 'Messages are there');
+    is( scalar(keys(%{$conf->{loglevels}})), 198, 'Policy data is there');
 }
 
 new_ok( 'DNSCheck::Config' => [ configdir => './t/config', sitedir => './t/config' ] );

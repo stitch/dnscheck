@@ -17,13 +17,12 @@ use_ok 'DNSCheck';
 ######################################################################
 
 sub set_flags {
-    my ($obj, $v4, $v6, $smtp) = @_;
+    my ($obj, $v4, $v6) = @_;
     
     my $net = $obj->config->get("net");
 
     $net->{ipv4} = $v4;
     $net->{ipv6} = $v6;
-    $net->{smtp} = $smtp;
 
     $obj->config->put('net', $net);
 }
@@ -53,7 +52,7 @@ ok(abs($warning_count - 5) < 5,
     "$warning_count WARNING-level results.");
 ok($dc->logger->count_warning == $warning_count);
 my $debug_count = scalar(grep { $_->[2] eq 'DEBUG' } @res);
-ok(abs($debug_count - 597) < 25, "$debug_count DEBUG-level results.");
+ok(abs($debug_count - 633) < 25, "$debug_count DEBUG-level results.");
 ok($dc->logger->count_debug == $debug_count);
 
 my %tag = map {$_->[3] => 1} @{$dc->logger->export};
@@ -70,7 +69,6 @@ $dc = new_ok('DNSCheck' => [{ configdir => './t/config' }]);
 set_flags($dc, undef, undef, undef);
 is($dc->config->get("net")->{ipv4}, undef, 'IPv4 flag set correctly');
 is($dc->config->get("net")->{ipv6}, undef, 'IPv6 flag set correctly');
-is($dc->config->get("net")->{smtp}, undef, 'SMTP flag set correctly');
 $dc->zone->test('nic.se');
 
 is_deeply(
@@ -92,16 +90,16 @@ is_deeply(
     "ZONE:FATAL_DELEGATION",
     "ZONE:END",
     ],
-    'IPv4, IPv6 and SMTP disabled');
+    'IPv4 and IPv6 disabled');
 
 $dc = new_ok('DNSCheck' => [{ configdir => './t/config' }]);
 set_flags($dc, undef, 1, undef);
 $dc->zone->test('iis.se');
-ok(scalar(@{$dc->logger->export}) > 550, 'IPv6-only tests');
+ok(scalar(@{$dc->logger->export}) > 540, 'IPv6-only tests');
 
 $dc = new_ok('DNSCheck' => [{ configdir => './t/config' }]);
 set_flags($dc, 1, undef, undef);
 $dc->zone->test('iis.se');
-ok(scalar(@{$dc->logger->export}) > 600, 'IPv4-only tests');
+ok(scalar(@{$dc->logger->export}) > 580, 'IPv4-only tests');
 
 done_testing();

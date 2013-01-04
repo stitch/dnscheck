@@ -33,6 +33,7 @@ package DNSCheck::Test::Address;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use base 'DNSCheck::Test::Common';
 
@@ -45,35 +46,42 @@ our @reserved_ipv4 = ();
 our @reserved_ipv6 = ();
 
 # REQUIRE: Private IPv4 Addresses (RFC 1918)
-push @private_ipv4, new Net::IP("10.0.0.0/8");
-push @private_ipv4, new Net::IP("172.16.0.0/12");
-push @private_ipv4, new Net::IP("192.168.0.0/16");
+push @private_ipv4, new Net::IP( "10.0.0.0/8" );
+push @private_ipv4, new Net::IP( "172.16.0.0/12" );
+push @private_ipv4, new Net::IP( "192.168.0.0/16" );
 
 # REQUIRE: Special-Use IPv4 Addresses (RFC 3330)
-push @reserved_ipv4, new Net::IP("127.0.0.0/8");
-push @reserved_ipv4, new Net::IP("224.0.0.0/4");
-push @reserved_ipv4, new Net::IP("0.0.0.0/8");
-push @reserved_ipv4, new Net::IP("169.254.0.0/16");
-push @reserved_ipv4, new Net::IP("192.0.2.0/24");
-push @reserved_ipv4, new Net::IP("192.88.99.0/24");
-push @reserved_ipv4, new Net::IP("198.18.0.0/15");
-push @reserved_ipv4, new Net::IP("240.0.0.0/4");
+push @reserved_ipv4, new Net::IP( "127.0.0.0/8" );
+push @reserved_ipv4, new Net::IP( "224.0.0.0/4" );
+push @reserved_ipv4, new Net::IP( "0.0.0.0/8" );
+push @reserved_ipv4, new Net::IP( "169.254.0.0/16" );
+push @reserved_ipv4, new Net::IP( "192.0.2.0/24" );
+push @reserved_ipv4, new Net::IP( "192.88.99.0/24" );
+push @reserved_ipv4, new Net::IP( "198.18.0.0/15" );
+push @reserved_ipv4, new Net::IP( "240.0.0.0/4" );
 
 # REQUIRE: Special-Use IPv4 Addresses (RFC 5735)
-push @reserved_ipv4, new Net::IP("198.51.100.0/24");
-push @reserved_ipv4, new Net::IP("203.0.113.0/24");
-push @reserved_ipv4, new Net::IP("192.0.0.0/24");
-push @reserved_ipv4, new Net::IP("255.255.255.255/32");
+push @reserved_ipv4, new Net::IP( "198.51.100.0/24" );
+push @reserved_ipv4, new Net::IP( "203.0.113.0/24" );
+push @reserved_ipv4, new Net::IP( "192.0.0.0/24" );
+push @reserved_ipv4, new Net::IP( "255.255.255.255/32" );
 
 # REQUIRE: Special-Use IPv6 Addresses (RFC 5156)
-push @reserved_ipv6, new Net::IP("::1/128");
-push @reserved_ipv6, new Net::IP("ff00::/8");
-push @reserved_ipv6, new Net::IP("::/128");
-push @reserved_ipv6, new Net::IP("::ffff:0:0/96");
-push @reserved_ipv6, new Net::IP("fe80::/10");
-push @reserved_ipv6, new Net::IP("fc00::/7");
-push @reserved_ipv6, new Net::IP("2001:0db8::/32");
-push @reserved_ipv6, new Net::IP("2001:10::/28");
+push @reserved_ipv6, new Net::IP( "::1/128" );
+push @reserved_ipv6, new Net::IP( "ff00::/8" );
+push @reserved_ipv6, new Net::IP( "::/128" );
+push @reserved_ipv6, new Net::IP( "::ffff:0:0/96" );
+push @reserved_ipv6, new Net::IP( "fe80::/10" );
+push @reserved_ipv6, new Net::IP( "fc00::/7" );
+push @reserved_ipv6, new Net::IP( "2001:0db8::/32" );
+push @reserved_ipv6, new Net::IP( "2001:10::/28" );
+
+# Discard-Only (RFC6666)
+push @reserved_ipv6, new Net::IP( '0100::/64' );
+
+# REQUIRE: Special-Use IPv4 Addresses (RFC 6598)
+
+push @reserved_ipv4, new Net::IP( '100.64.0.0/10' );
 
 ######################################################################
 
@@ -89,40 +97,40 @@ sub test {
     my $errors = 0;
 
     $logger->module_stack_push();
-    $logger->auto("ADDRESS:BEGIN", $address);
+    $logger->auto( "ADDRESS:BEGIN", $address );
 
     # REQUIRE: Address must be syntactically correct
-    my $ip = new Net::IP($address);
-    unless ($ip) {
-        $errors += $logger->auto("ADDRESS:INVALID", $address);
+    my $ip = new Net::IP( $address );
+    unless ( $ip ) {
+        $errors += $logger->auto( "ADDRESS:INVALID", $address );
         goto DONE;
     }
 
     # REQUIRE: Do not allow private IPv4 Addresses
-    if ($ip->version == 4) {
-        foreach my $prefix (@private_ipv4) {
-            if ($ip->overlaps($prefix)) {
-                $errors += $logger->auto("ADDRESS:PRIVATE_IPV4", $address);
+    if ( $ip->version == 4 ) {
+        foreach my $prefix ( @private_ipv4 ) {
+            if ( $ip->overlaps( $prefix ) ) {
+                $errors += $logger->auto( "ADDRESS:PRIVATE_IPV4", $address );
                 goto DONE;
             }
         }
     }
 
     # REQUIRE: Do not allow reserved IPv4 Addresses
-    if ($ip->version == 4) {
-        foreach my $prefix (@reserved_ipv4) {
-            if ($ip->overlaps($prefix)) {
-                $errors += $logger->auto("ADDRESS:RESERVED_IPV4", $address);
+    if ( $ip->version == 4 ) {
+        foreach my $prefix ( @reserved_ipv4 ) {
+            if ( $ip->overlaps( $prefix ) ) {
+                $errors += $logger->auto( "ADDRESS:RESERVED_IPV4", $address );
                 goto DONE;
             }
         }
     }
 
     # REQUIRE: Do not allow reserved IPv6 Addresses
-    if ($ip->version == 6) {
-        foreach my $prefix (@reserved_ipv6) {
-            if ($ip->overlaps($prefix)) {
-                $errors += $logger->auto("ADDRESS:RESERVED_IPV6", $address);
+    if ( $ip->version == 6 ) {
+        foreach my $prefix ( @reserved_ipv6 ) {
+            if ( $ip->overlaps( $prefix ) ) {
+                $errors += $logger->auto( "ADDRESS:RESERVED_IPV6", $address );
                 goto DONE;
             }
         }
@@ -130,35 +138,35 @@ sub test {
 
     # REQUIRE: PTR should exist for address
     my $reverse = $ip->reverse_ip();
-    my $ptr = $parent->dns->query_resolver($reverse, $qclass, "PTR");
+    my $ptr = $parent->dns->query_resolver( $reverse, $qclass, "PTR" );
 
-    unless ($ptr && $ptr->header->ancount) {
-        $logger->auto("ADDRESS:PTR_NOT_FOUND", $address, $reverse);
-    } else {
+    unless ( $ptr && scalar( $ptr->answer ) ) {
+        $logger->auto( "ADDRESS:PTR_NOT_FOUND", $address, $reverse );
+    }
+    else {
 
         # REQUIRE: Hostname in PTR should exist
         # FIXME: check that at least one name points back to $address
         my @ptrlist = ();
-        foreach my $p ($ptr->answer) {
-            next unless (($p->type eq "PTR") && $p->ptrdname);
+        foreach my $p ( $ptr->answer ) {
+            next unless ( ( $p->type eq "PTR" ) && $p->ptrdname );
             push @ptrlist, $p->ptrdname;
         }
-        foreach my $hostname (sort @ptrlist) {
-            my $ipv4 = $parent->dns->query_resolver($hostname, $qclass, "A");
-            my $ipv6 = $parent->dns->query_resolver($hostname, $qclass, "AAAA");
+        foreach my $hostname ( sort @ptrlist ) {
+            my $ipv4 = $parent->dns->query_resolver( $hostname, $qclass, "A" );
+            my $ipv6 = $parent->dns->query_resolver( $hostname, $qclass, "AAAA" );
 
-            unless (($ipv4 && $ipv4->header->ancount)
-                || ($ipv6 && $ipv6->header->ancount))
+            unless ( ( $ipv4 && scalar( $ipv4->answer ) )
+                || ( $ipv6 && scalar( $ipv6->answer ) ) )
             {
-                $logger->auto("ADDRESS:PTR_HOSTNAME_NOT_FOUND",
-                    $address, $hostname);
+                $logger->auto( "ADDRESS:PTR_HOSTNAME_NOT_FOUND", $address, $hostname );
                 goto DONE;
             }
         }
     }
 
   DONE:
-    $logger->auto("ADDRESS:END", $address);
+    $logger->auto( "ADDRESS:END", $address );
     $logger->module_stack_pop();
 
     return $errors;

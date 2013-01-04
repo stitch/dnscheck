@@ -33,11 +33,21 @@ package DNSCheck::Logger;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use Time::HiRes qw(time);
 use DNSCheck::Locale;
 
 ######################################################################
+
+our %levels = (
+    DEBUG    => 1,
+    INFO     => 2,
+    NOTICE   => 3,
+    WARNING  => 4,
+    ERROR    => 5,
+    CRITICAL => 6,
+);
 
 sub new {
     my $proto = shift;
@@ -49,6 +59,7 @@ sub new {
     my $loglevels = $config->get( 'loglevels' );
 
     $self->{interactive} = $config->get( 'logging' )->{interactive};
+    $self->{min_level}   = $config->get( 'logging' )->{min_level} // 'DEBUG';
     $self->{debug}       = $config->get( 'debug' );
 
     if ( $loglevels ) {
@@ -67,9 +78,9 @@ sub new {
 
     $self->{start} = time;
 
-    $self->{filters} = ( $config->get( 'filters' ) ) || {};
+    $self->{filters} = ( $config->get( 'filters' ) ) // {};
 
-    bless $self, $class;
+    return bless $self, $class;
 }
 
 sub parent {
@@ -93,6 +104,8 @@ sub clear {
     $self->{messages}     = ();
     $self->{module_stack} = [0];
     $self->{module_id}    = 0;
+
+    return;
 }
 
 sub logname {
@@ -118,6 +131,8 @@ sub remove_filters_for {
     my ( $self, $tag ) = @_;
 
     delete $self->{filters}{$tag};
+
+    return;
 }
 
 sub add {
@@ -128,8 +143,8 @@ sub add {
     my $parent_module_id = -1;
 
     if ( $#module_stack > 0 ) {
-        $module_id        = $module_stack[$#module_stack];
-        $parent_module_id = $module_stack[ $#module_stack - 1 ];
+        $module_id        = $module_stack[-1];
+        $parent_module_id = $module_stack[-2];
     }
 
     $level = $self->check_filters( $level, $tag, @args );
@@ -148,6 +163,8 @@ sub add {
         $self->print();
         $self->{messages} = ();
     }
+
+    return;
 }
 
 sub check_filters {
@@ -174,9 +191,8 @@ sub check_filters {
 }
 
 sub auto {
-    my $self = shift;
+    my ( $self, $tag, @args ) = @_;
 
-    my $tag   = shift;
     my $level = undef;
 
     if ( $self->{loglevels}->{$tag} ) {
@@ -186,7 +202,7 @@ sub auto {
         $level = "DEBUG";
     }
 
-    $self->add( $level, $tag, @_ );
+    $self->add( $level, $tag, @args );
 
     # return 1 for ERROR or CRITICAL
     if ( $level eq "ERROR" or $level eq "CRITICAL" ) {
@@ -197,6 +213,7 @@ sub auto {
     }
 }
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub dump {
     my $self = shift;
 
@@ -205,20 +222,29 @@ sub dump {
     foreach my $e ( @{ $self->{messages} } ) {
         printf STDERR ( "%s:%s%s [%s] %s\n", $e->{timestamp}, $context, $e->{level}, $e->{tag}, join( ";", @{ $e->{arg} } ) );
     }
+
+    return;
 }
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub print {
     my $self   = shift;
     my $locale = shift;
 
+    ## no critic (Modules::RequireExplicitInclusion)
     STDOUT->autoflush( 1 );
 
     my $context = $self->{logname} ? sprintf( "%s ", $self->{logname} ) : "";
 
     foreach my $e ( @{ $self->{messages} } ) {
-        if ( $e->{level} eq 'DEBUG' and !$self->{debug} ) {
+        if ( $e->{level} eq 'DEBUG' and not $self->{debug} ) {
             next;
         }
+
+        if ( $levels{ $e->{level} } < $levels{ $self->{min_level} } ) {
+            next;
+        }
+
         if ( $self->locale ) {
             printf( "%7.3f: %s%s %s\n", ( $e->{timestamp} - $self->{start} ), $context, $e->{level}, $self->locale->expand( $e->{tag}, @{ $e->{arg} } ) );
 
@@ -227,6 +253,8 @@ sub print {
             printf( "%7.3f: %s%s [%s] %s\n", ( $e->{timestamp} - $self->{start} ), $context, $e->{level}, $e->{tag}, join( ";", @{ $e->{arg} } ) );
         }
     }
+
+    return;
 }
 
 sub export {
@@ -307,12 +335,12 @@ sub get_next_entry {
 sub module_stack_push {
     my $self = shift;
     $self->{module_id}++;
-    push @{ $self->{module_stack} }, $self->{module_id};
+    return push @{ $self->{module_stack} }, $self->{module_id};
 }
 
 sub module_stack_pop {
     my $self = shift;
-    pop @{ $self->{module_stack} };
+    return pop @{ $self->{module_stack} };
 }
 
 1;

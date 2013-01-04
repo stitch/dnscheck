@@ -30,6 +30,8 @@
 
 use warnings;
 use strict;
+use utf8;
+use 5.01001;
 
 use Getopt::Long;
 use DNSCheck;
@@ -53,13 +55,13 @@ my $newsuffix    = '.new';
 my $backupsuffix = '.bak';
 
 sub setup {
-    GetOptions("debug" => \$debug);
+    GetOptions( "debug" => \$debug );
 
     print "Running in debug mode.\n" if $debug;
 
     $dc     = DNSCheck->new;
-    $config = $dc->config->get("zonediff");
-    foreach my $domain (@{ $config->{flagdomain} }) {
+    $config = $dc->config->get( "zonediff" );
+    foreach my $domain ( @{ $config->{flagdomain} } ) {
         $flagdomain{exist}{$domain} = 1;
         print "Flag domain: $domain\n" if $debug;
     }
@@ -71,7 +73,7 @@ sub setup {
     @servers = @{ $config->{servers} };
     $domain  = $config->{domain};
 
-    if ($debug) {
+    if ( $debug ) {
         print "Data file: $filename\n";
         print "TSIG: $tsig\n";
         print "dig: $dig\n";
@@ -83,28 +85,27 @@ sub setup {
 sub fetch_new_zone {
     my $success;
 
-    foreach my $server (@servers) {
+    foreach my $server ( @servers ) {
         my $start = time;
         print "Trying server $server...\n" if $debug;
         print "$dig axfr $domain \@$server -y $tsig > $filename$newsuffix\n"
           if $debug;
-        my $res =
-          system("$dig axfr $domain \@$server -y $tsig > $filename$newsuffix");
-        printf("Transfer ended after %0.2f seconds.\n", time() - $start);
+        my $res = system( "$dig axfr $domain \@$server -y $tsig > $filename$newsuffix" );
+        printf( "Transfer ended after %0.2f seconds.\n", time() - $start );
         $res >>= 8;
-        if ($res == 0) {
+        if ( $res == 0 ) {
             print "Got file.\n" if $debug;
             $success = 1;
             last;
         }
     }
 
-    unless (-e $filename) {
+    unless ( -e $filename ) {
         print "$filename missing.\n";
-        if ($success) {
+        if ( $success ) {
             print "Moving just fetched file to $filename and exiting.\n";
             rename $filename . $newsuffix, $filename;
-            exit(1);
+            exit( 1 );
         }
     }
 
@@ -112,10 +113,11 @@ sub fetch_new_zone {
     my $oldsize = -s $filename;
     my $ratio   = $newsize / $oldsize;
 
-    if ($ratio < 0.83) {
+    if ( $ratio < 0.83 ) {
         die "New file is more than 20% smaller than old file. Exiting.\n";
-    } else {
-        printf("Ratio of new file size to old file size: %0.3f\n", $ratio)
+    }
+    else {
+        printf( "Ratio of new file size to old file size: %0.3f\n", $ratio )
           if $debug;
     }
 }
@@ -130,20 +132,20 @@ sub switch_files_around {
 }
 
 sub check_for_flagdomains {
-    foreach my $name (keys %{ $flagdomain{exist} }) {
-        unless ($flagdomain{new}{$name}) {
+    foreach my $name ( keys %{ $flagdomain{exist} } ) {
+        unless ( $flagdomain{new}{$name} ) {
             die "Flag domain $name missing from new file. Exiting.\n";
         }
-        unless ($flagdomain{old}{$name}) {
+        unless ( $flagdomain{old}{$name} ) {
             die "Flag domain $name missing from old file. Exiting.\n";
         }
     }
 }
 
 sub line_parse {
-    my ($line) = @_;
+    my ( $line ) = @_;
 
-    my ($name, $type, $rest) = $line =~ m/
+    my ( $name, $type, $rest ) = $line =~ m/
                 ^
                 ([-.a-z0-9]+)\. # Name
                 \s+
@@ -156,47 +158,49 @@ sub line_parse {
                 (.+)          # Rest
                 $
                 /x;
-    if ($name) {
-        if ($type eq 'A' or $type eq 'AAAA') {
-            return ($rest, $type, $name);
-        } else {
-            return ($name, $type, $rest);
+    if ( $name ) {
+        if ( $type eq 'A' or $type eq 'AAAA' ) {
+            return ( $rest, $type, $name );
         }
-    } else {
+        else {
+            return ( $name, $type, $rest );
+        }
+    }
+    else {
         return;
     }
 }
 
 sub extract {
-    my ($ary, $type) = @_;
+    my ( $ary, $type ) = @_;
 
     return join '', map { $_->[2] }
       grep { $_->[1] eq $type } sort { $a->[2] cmp $b->[2] } @$ary;
 }
 
 sub compare {
-    my ($n, $o) = @_;
+    my ( $n, $o ) = @_;
     my $name = $n->[0][0];
 
-    my $nns   = extract($n, 'NS');
-    my $ons   = extract($o, 'NS');
-    my $nds   = extract($n, 'DS');
-    my $ods   = extract($o, 'DS');
-    my $na    = extract($n, 'A');
-    my $oa    = extract($o, 'A');
-    my $naaaa = extract($n, 'AAAA');
-    my $oaaaa = extract($o, 'AAAA');
+    my $nns   = extract( $n, 'NS' );
+    my $ons   = extract( $o, 'NS' );
+    my $nds   = extract( $n, 'DS' );
+    my $ods   = extract( $o, 'DS' );
+    my $na    = extract( $n, 'A' );
+    my $oa    = extract( $o, 'A' );
+    my $naaaa = extract( $n, 'AAAA' );
+    my $oaaaa = extract( $o, 'AAAA' );
 
-    $changed{$name} .= 'NS '   if $nns   ne $ons;
-    $changed{$name} .= 'DS '   if $nds   ne $ods;
-    $changed{$name} .= 'A '    if $na    ne $oa;
+    $changed{$name} .= 'NS '   if $nns ne $ons;
+    $changed{$name} .= 'DS '   if $nds ne $ods;
+    $changed{$name} .= 'A '    if $na ne $oa;
     $changed{$name} .= 'AAAA ' if $naaaa ne $oaaaa;
 
     my %oldns = map { $_->[2], 1 } grep { $_->[1] eq 'NS' } @$o;
-    foreach my $new (map { $_->[2], 1 } grep { $_->[1] eq 'NS' } @$n) {
+    foreach my $new ( map { $_->[2], 1 } grep { $_->[1] eq 'NS' } @$n ) {
         delete $oldns{$new};
     }
-    foreach my $ns (keys %oldns) {
+    foreach my $ns ( keys %oldns ) {
         $dropped{$name}{$ns} = 1;
     }
 }
@@ -213,55 +217,58 @@ sub process {
 
     print "Datafiles opened.\n" if $debug;
 
-    while (defined($nline) or defined($oline)) {
+    while ( defined( $nline ) or defined( $oline ) ) {
         my @n;
         my @o;
 
         $nline = <$new>;
-        chomp($nline) if $nline;
+        chomp( $nline ) if $nline;
         $oline = <$old>;
-        chomp($oline) if $oline;
+        chomp( $oline ) if $oline;
 
-        if (defined($nline) and (@n = line_parse($nline))) {
+        if ( defined( $nline ) and ( @n = line_parse( $nline ) ) ) {
             $flagdomain{new}{ $n[0] } = 1 if $flagdomain{exist}{ $n[0] };
             $res{$nline} += 1;
-            if (defined($res{$nline}) and $res{$nline} == 0) {
+            if ( defined( $res{$nline} ) and $res{$nline} == 0 ) {
                 delete $res{$nline};
             }
         }
 
-        if (defined($oline) and (@o = line_parse($oline))) {
+        if ( defined( $oline ) and ( @o = line_parse( $oline ) ) ) {
             $flagdomain{old}{ $o[0] } = 1 if $flagdomain{exist}{ $o[0] };
             $res{$oline} -= 1;
-            if (defined($res{$oline}) and $res{$oline} == 0) {
+            if ( defined( $res{$oline} ) and $res{$oline} == 0 ) {
                 delete $res{$oline};
             }
         }
     }
 
-    print "Data files read (" . scalar(keys %res) . " entries retained).\n"
+    print "Data files read (" . scalar( keys %res ) . " entries retained).\n"
       if $debug;
 
     my %old;
     my %new;
-    while (my ($k, $v) = each %res) {
-        my ($name, $type, $data) = line_parse($k);
+    while ( my ( $k, $v ) = each %res ) {
+        my ( $name, $type, $data ) = line_parse( $k );
 
-        if ($v == 1) {
-            push @{ $new{$name} }, [$name, $type, $data];
-        } elsif ($v == -1) {
-            push @{ $old{$name} }, [$name, $type, $data];
-        } else {
+        if ( $v == 1 ) {
+            push @{ $new{$name} }, [ $name, $type, $data ];
+        }
+        elsif ( $v == -1 ) {
+            push @{ $old{$name} }, [ $name, $type, $data ];
+        }
+        else {
             print "Error: $v => $k\n";
         }
     }
     %res = ();
 
-    foreach my $zone (keys %new) {
-        if (!$old{$zone}) {
+    foreach my $zone ( keys %new ) {
+        if ( !$old{$zone} ) {
             $added{$zone} = 1;
-        } else {
-            compare($new{$zone}, $old{$zone});
+        }
+        else {
+            compare( $new{$zone}, $old{$zone} );
         }
     }
     print "Retained data compared.\n" if $debug;
@@ -270,10 +277,8 @@ sub process {
 sub get_source_id {
     my $dbh = $dc->dbh;
 
-    $dbh->do(q[INSERT IGNORE INTO source (name) VALUES (?)],
-        undef, $config->{sourcestring});
-    my @res = $dbh->selectrow_array(q[SELECT id FROM source WHERE name = ?],
-        undef, $config->{sourcestring});
+    $dbh->do( q[INSERT IGNORE INTO source (name) VALUES (?)], undef, $config->{sourcestring} );
+    my @res = $dbh->selectrow_array( q[SELECT id FROM source WHERE name = ?], undef, $config->{sourcestring} );
 
     print "Got source id " . $res[0] . "\n" if $debug;
     return $res[0];
@@ -283,26 +288,22 @@ sub save_to_database {
     my $dbh       = $dc->dbh;
     my $source_id = get_source_id();
 
-    my $drop_sth = $dbh->prepare(
-q[INSERT IGNORE INTO delegation_history (domain, nameserver) VALUES (?,?)]
-    );
-    my $queue_sth = $dbh->prepare(
-q[INSERT INTO queue (priority,domain,source_id,source_data) VALUES (?,?,?,?)]
-    );
+    my $drop_sth  = $dbh->prepare( q[INSERT IGNORE INTO delegation_history (domain, nameserver) VALUES (?,?)] );
+    my $queue_sth = $dbh->prepare( q[INSERT INTO queue (priority,domain,source_id,source_data) VALUES (?,?,?,?)] );
 
-    foreach my $name (keys %added) {
-        $queue_sth->execute(3, $name, $source_id, 'NEW');
+    foreach my $name ( keys %added ) {
+        $queue_sth->execute( 3, $name, $source_id, 'NEW' );
         print "Queue: $name NEW\n" if $debug;
     }
 
-    foreach my $name (keys %changed) {
-        $queue_sth->execute(3, $name, $source_id, $changed{$name});
+    foreach my $name ( keys %changed ) {
+        $queue_sth->execute( 3, $name, $source_id, $changed{$name} );
         print "Queue: $name " . $changed{$name} . "\n" if $debug;
     }
 
-    foreach my $zone (keys %dropped) {
-        foreach my $ns (keys %{ $dropped{$zone} }) {
-            $drop_sth->execute($zone, $ns);
+    foreach my $zone ( keys %dropped ) {
+        foreach my $ns ( keys %{ $dropped{$zone} } ) {
+            $drop_sth->execute( $zone, $ns );
             print "Delegation History: $zone $ns\n" if $debug;
         }
     }

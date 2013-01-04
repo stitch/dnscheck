@@ -33,18 +33,19 @@ package DNSCheck::Test::Common;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use Carp;
 
 sub new {
     my $proto = shift;
-    my $class = ref($proto) || $proto;
+    my $class = ref( $proto ) || $proto;
     my $self  = {};
     bless $self, $proto;
 
     $self->{parent} = shift;
 
-    croak "Creating test object without parent" unless defined($self->{parent});
+    croak "Creating test object without parent" unless defined( $self->{parent} );
 
     return $self;
 }
@@ -70,7 +71,7 @@ sub config {
 sub qclass {
     my $self = shift;
 
-    return $self->parent->config->get("dns")->{class};
+    return $self->parent->config->get( "dns" )->{class};
 }
 
 __END__

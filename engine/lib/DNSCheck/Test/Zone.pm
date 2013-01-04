@@ -33,6 +33,7 @@ package DNSCheck::Test::Zone;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use base 'DNSCheck::Test::Common';
 
@@ -49,44 +50,44 @@ sub test {
 
     return 0 unless $parent->config->should_run;
 
-    $logger->logname($zone);
+    $logger->logname( $zone );
 
     $logger->module_stack_push();
-    $logger->auto("ZONE:BEGIN", $zone, $DNSCheck::VERSION);
+    $logger->auto( "ZONE:BEGIN", $zone, $DNSCheck::VERSION );
 
-    if ($parent->host->host_syntax($zone)) {
-        $logger->auto('ZONE:INVALID_NAME', $zone);
+    if ( $parent->host->host_syntax( $zone ) ) {
+        $logger->auto( 'ZONE:INVALID_NAME', $zone );
         goto DONE;
     }
 
-    my ($errors, $testable) = $parent->delegation->test($zone, $history);
+    my ( $errors, $testable ) = $parent->delegation->test( $zone, $history );
 
-    unless ($testable) {
-        $logger->auto("ZONE:FATAL_DELEGATION", $zone);
+    unless ( $testable ) {
+        $logger->auto( "ZONE:FATAL_DELEGATION", $zone );
         goto DONE;
     }
 
-    my @ns_at_child = $parent->dns->get_nameservers_at_child($zone, $qclass);
+    my @ns_at_child = $parent->dns->get_nameservers_at_child( $zone, $qclass );
 
-    unless ($ns_at_child[0]) {
+    unless ( $ns_at_child[0] ) {
 
         # This shouldn't happen because get_nameservers_at_child was also
         # called in DNSCheck::Test::Delegation->test
-        $logger->auto("ZONE:FATAL_NO_CHILD_NS", $zone);
+        $logger->auto( "ZONE:FATAL_NO_CHILD_NS", $zone );
         goto DONE;
     }
 
-    foreach my $ns (@ns_at_child) {
-        $errors += $parent->nameserver->test($zone, $ns);
+    foreach my $ns ( @ns_at_child ) {
+        $errors += $parent->nameserver->test( $zone, $ns );
     }
 
-    $errors += $parent->consistency->test($zone);
-    $errors += $parent->soa->test($zone);
-    $errors += $parent->connectivity->test($zone);
-    $errors += $parent->dnssec->test($zone);
+    $errors += $parent->consistency->test( $zone );
+    $errors += $parent->soa->test( $zone );
+    $errors += $parent->connectivity->test( $zone );
+    $errors += $parent->dnssec->test( $zone );
 
   DONE:
-    $logger->auto("ZONE:END", $zone);
+    $logger->auto( "ZONE:END", $zone );
     $logger->module_stack_pop();
 
     return $errors;

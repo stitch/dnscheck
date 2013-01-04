@@ -28,8 +28,10 @@
 #
 ######################################################################
 
+use 5.01001;
 use strict;
 use warnings;
+use utf8;
 
 use DNSCheck;
 use Net::SMTP;
@@ -51,31 +53,23 @@ my $active_rp_id;
 my $address_rp_id;
 
 sub setup {
-    $dc = DNSCheck->new({ locale => "en" });
-    $reggie = get_reggie_dbh($dc->config->get("reggie"));
+    $dc = DNSCheck->new( { locale => "en" } );
+    $reggie = get_reggie_dbh( $dc->config->get( "reggie" ) );
 
-    my $activekey  = $dc->config->get("12hour")->{activekey};
-    my $addresskey = $dc->config->get("12hour")->{addresskey};
+    my $activekey  = $dc->config->get( "12hour" )->{activekey};
+    my $addresskey = $dc->config->get( "12hour" )->{addresskey};
 
-    ($active_rp_id) = $reggie->selectrow_array(
-        q[select RP_ID from REGISTRAR_PROPERTIES where PROP_KEY = ?],
-        undef, $activekey);
-    ($address_rp_id) = $reggie->selectrow_array(
-        q[select RP_ID from REGISTRAR_PROPERTIES where PROP_KEY = ?],
-        undef, $addresskey);
+    ( $active_rp_id )  = $reggie->selectrow_array( q[select RP_ID from REGISTRAR_PROPERTIES where PROP_KEY = ?], undef, $activekey );
+    ( $address_rp_id ) = $reggie->selectrow_array( q[select RP_ID from REGISTRAR_PROPERTIES where PROP_KEY = ?], undef, $addresskey );
 
-    my $source_name = $dc->config->get("12hour")->{sourcestring};
-    ($source_id) =
-      $dc->dbh->selectrow_array(q[SELECT id FROM source WHERE name = ?],
-        undef, $source_name);
-    die "No source information in database.\n" unless defined($source_id);
+    my $source_name = $dc->config->get( "12hour" )->{sourcestring};
+    ( $source_id ) = $dc->dbh->selectrow_array( q[SELECT id FROM source WHERE name = ?], undef, $source_name );
+    die "No source information in database.\n" unless defined( $source_id );
 
-    $templatedir = $dc->config->get("12hour")->{templatedir};
-    $domaintemplate =
-      Text::Template->new(SOURCE => catfile($templatedir, 'domain.template'))
+    $templatedir = $dc->config->get( "12hour" )->{templatedir};
+    $domaintemplate = Text::Template->new( SOURCE => catfile( $templatedir, 'domain.template' ) )
       or die "Failed to construct domain template: $Text::Template::ERROR";
-    $registrartemplate =
-      Text::Template->new(SOURCE => catfile($templatedir, 'registrar.template'))
+    $registrartemplate = Text::Template->new( SOURCE => catfile( $templatedir, 'registrar.template' ) )
       or die "Failed to construct registrar tempalte: $Text::Template::ERROR";
 }
 
@@ -92,11 +86,8 @@ sub tests_for_domain {
         ], 'id', undef, $tref->{id}
     );
 
-    foreach my $t (keys %$rref) {
-        $rref->{$t}{formatted} =
-          $locale->expand(grep { defined($_) }
-              @{ $rref->{$t} }
-              {qw(message arg0 arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9)});
+    foreach my $t ( keys %$rref ) {
+        $rref->{$t}{formatted} = $locale->expand( grep { defined( $_ ) } @{ $rref->{$t} }{qw(message arg0 arg1 arg2 arg3 arg4 arg5 arg6 arg7 arg8 arg9)} );
     }
 
     return $rref;
@@ -107,25 +98,16 @@ sub generate_mail_for_registrar {
     my $ref  = shift;
     my @domains;
 
-    foreach my $d (keys %{ $ref->{domains} }) {
-        push @domains,
-          [
-            $d,
-            tests_for_domain($ref->{domains}{$d}),
-            [split(/\s+/, $ref->{domains}{$d}{source_data})],
-            $ref->{domains}{$d}{count_critical},
-            $ref->{domains}{$d}{count_error},
-            $ref->{domains}{$d}{id},
-            $ref->{domains}{$d}{time_t},
-          ];
+    foreach my $d ( keys %{ $ref->{domains} } ) {
+        push @domains, [ $d, tests_for_domain( $ref->{domains}{$d} ), [ split( /\s+/, $ref->{domains}{$d}{source_data} ) ], $ref->{domains}{$d}{count_critical}, $ref->{domains}{$d}{count_error}, $ref->{domains}{$d}{id}, $ref->{domains}{$d}{time_t}, ];
     }
 
     @domains = sort { $a->[0] cmp $b->[0] } @domains;
 
     my $msg = MIME::Lite->new(
-        From    => $dc->config->get("12hour")->{from},
+        From    => $dc->config->get( "12hour" )->{from},
         To      => $ref->{mail},
-        Subject => $dc->config->get("12hour")->{subject},
+        Subject => $dc->config->get( "12hour" )->{subject},
         Type    => 'multipart/mixed',
     );
     $msg->attach(
@@ -140,26 +122,26 @@ sub generate_mail_for_registrar {
     );
     $msg->attach(
         Type        => 'application/x-yaml',
-        Data        => produce_yaml($ref->{domains}, @domains),
+        Data        => produce_yaml( $ref->{domains}, @domains ),
         Disposition => 'attachment',
         Filename    => 'dnscheck_results.yaml',
     );
 
-    my $bcc = $dc->config->get("12hour")->{archive};
-    if ($bcc) {
-        $msg->add(Bcc => $bcc);
+    my $bcc = $dc->config->get( "12hour" )->{archive};
+    if ( $bcc ) {
+        $msg->add( Bcc => $bcc );
     }
 
     return $msg;
 }
 
 sub produce_yaml {
-    my %ref     = %{ shift(@_) };
+    my %ref     = %{ shift( @_ ) };
     my @domains = @_;
 
-    foreach my $d (@domains) {
+    foreach my $d ( @domains ) {
         my $n = $d->[0];
-        foreach (sort keys %{ $d->[1] }) {
+        foreach ( sort keys %{ $d->[1] } ) {
             my $t = $d->[1]{$_};
             push @{ $ref{$n}{tests} },
               {
@@ -167,13 +149,7 @@ sub produce_yaml {
                 timestamp => $t->{timestamp},
                 formatted => $t->{formatted},
                 level     => $t->{level},
-                args      => [
-                    grep { $_ } (
-                        $t->{arg0}, $t->{arg1}, $t->{arg2}, $t->{arg3},
-                        $t->{arg4}, $t->{arg5}, $t->{arg6}, $t->{arg7},
-                        $t->{arg8}, $t->{arg9}
-                    )
-                ],
+                args      => [ grep { $_ } ( $t->{arg0}, $t->{arg1}, $t->{arg2}, $t->{arg3}, $t->{arg4}, $t->{arg5}, $t->{arg6}, $t->{arg7}, $t->{arg8}, $t->{arg9} ) ],
               };
         }
         delete $ref{$n}{id};
@@ -182,19 +158,16 @@ sub produce_yaml {
         delete $ref{$n}{source_data};
     }
 
-    return Dump(\%ref);
+    return Dump( \%ref );
 }
 
 sub get_reggie_dbh {
     my $conf = shift;
 
-    my $dsn = sprintf("DBI:mysql:database=%s;hostname=%s;port=%s",
-        $conf->{"database"}, $conf->{"host"}, $conf->{"port"});
+    my $dsn = sprintf( "DBI:mysql:database=%s;hostname=%s;port=%s", $conf->{"database"}, $conf->{"host"}, $conf->{"port"} );
 
-    my $dbh =
-      DBI->connect($dsn, $conf->{"user"}, $conf->{"password"},
-        { RaiseError => 1, AutoCommit => 1 });
-    die "Failed to connect to Reggie: " . $DBI::errstr unless defined($dbh);
+    my $dbh = DBI->connect( $dsn, $conf->{"user"}, $conf->{"password"}, { RaiseError => 1, AutoCommit => 1 } );
+    die "Failed to connect to Reggie: " . $DBI::errstr unless defined( $dbh );
 
     return $dbh;
 
@@ -203,7 +176,7 @@ sub get_reggie_dbh {
 sub get_registrar_info {
     my $domain = shift;
 
-    my ($email3, $display_name, $registrar_id) = $reggie->selectrow_array(
+    my ( $email3, $display_name, $registrar_id ) = $reggie->selectrow_array(
         q[
         select EMAIL3, DISPLAY_NAME, REGISTRAR_ID
         from REGISTRARS, USERS, DOMAINS
@@ -218,34 +191,34 @@ sub get_registrar_info {
         where RP_ID = ? and REGISTRAR_ID = ?]
     );
 
-    $propquery->execute($active_rp_id, $registrar_id);
-    my ($mail_active) = $propquery->fetchrow_array;
+    $propquery->execute( $active_rp_id, $registrar_id );
+    my ( $mail_active ) = $propquery->fetchrow_array;
 
-    $propquery->execute($address_rp_id, $registrar_id);
-    my ($mail_address) = $propquery->fetchrow_array;
+    $propquery->execute( $address_rp_id, $registrar_id );
+    my ( $mail_address ) = $propquery->fetchrow_array;
 
-    $email3 = $mail_address if ($mail_address and $mail_active);
+    $email3 = $mail_address if ( $mail_address and $mail_active );
 
-    return ($email3, $display_name, $mail_active);
+    return ( $email3, $display_name, $mail_active );
 }
 
 sub aggregate_registrar_info {
     my @domains = @_;
     my %res;
 
-    my $no_registrar_address = $dc->config->get("12hour")->{fallback}
+    my $no_registrar_address = $dc->config->get( "12hour" )->{fallback}
       || 'failure@example.com';
 
-    foreach my $d (@domains) {
-        my ($mail, $name, $sendp) = get_registrar_info($d);
-        next if ($mail and !$sendp);
+    foreach my $d ( @domains ) {
+        my ( $mail, $name, $sendp ) = get_registrar_info( $d );
+        next if ( $mail and !$sendp );
 
-        my $r = get_test_results($d);
-        if ($r->{count_critical} + $r->{count_error} == 0) {
+        my $r = get_test_results( $d );
+        if ( $r->{count_critical} + $r->{count_error} == 0 ) {
             next;    # A later test was clean
         }
-        $mail = $no_registrar_address unless defined($mail);
-        $name = "Unknown registrar"   unless defined($name);
+        $mail = $no_registrar_address unless defined( $mail );
+        $name = "Unknown registrar"   unless defined( $name );
         $res{$name}{mail} = $mail;
         $res{$name}{domains}{$d} = $r;
     }
@@ -260,7 +233,7 @@ sub domains_tested_last_day {
         WHERE begin > subtime(now(),?) 
             AND (count_critical + count_error) > 0
             AND source_id = ?
-        ], undef, $dc->config->get("12hour")->{timespan}, $source_id
+        ], undef, $dc->config->get( "12hour" )->{timespan}, $source_id
     );
     return map { $_->[0] } @$aref;
 }
@@ -278,17 +251,15 @@ sub get_test_results {
 }
 
 setup();
-my %data = aggregate_registrar_info(domains_tested_last_day());
+my %data = aggregate_registrar_info( domains_tested_last_day() );
 
-foreach my $reg (keys %data) {
-    if ($dc->config->get("12hour")->{debug}) {
-        print generate_mail_for_registrar($reg, $data{$reg})->as_string;
-    } else {
-        eval {
-            generate_mail_for_registrar($reg, $data{$reg})
-              ->send('smtp', $dc->config->get("12hour")->{smtphost});
-        };
-        if ($@) {
+foreach my $reg ( keys %data ) {
+    if ( $dc->config->get( "12hour" )->{debug} ) {
+        print generate_mail_for_registrar( $reg, $data{$reg} )->as_string;
+    }
+    else {
+        eval { generate_mail_for_registrar( $reg, $data{$reg} )->send( 'smtp', $dc->config->get( "12hour" )->{smtphost} ); };
+        if ( $@ ) {
             print STDERR $@;
         }
     }

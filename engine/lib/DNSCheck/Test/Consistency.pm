@@ -30,9 +30,10 @@
 
 package DNSCheck::Test::Consistency;
 
-require 5.010001;
+use 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use base 'DNSCheck::Test::Common';
 
@@ -53,51 +54,44 @@ sub test {
     return 0 unless $parent->config->should_run;
 
     $logger->module_stack_push();
-    $logger->auto("CONSISTENCY:BEGIN", $zone);
+    $logger->auto( "CONSISTENCY:BEGIN", $zone );
 
     my %serial_counter;
     my %digest_counter;
     my %nameservers = ();
 
     # fetch all nameservers, both from parent and child
-    my @ns_parent = $parent->dns->get_nameservers_at_parent($zone, $qclass);
-    my @ns_child = $parent->dns->get_nameservers_at_child($zone, $qclass);
+    my @ns_parent = $parent->dns->get_nameservers_at_parent( $zone, $qclass );
+    my @ns_child = $parent->dns->get_nameservers_at_child( $zone, $qclass );
 
-    foreach my $ns (@ns_parent, @ns_child) {
-        foreach my $address ($parent->dns->find_addresses($ns, $qclass)) {
-            my $ip = new Net::IP($address);
+    foreach my $ns ( @ns_parent, @ns_child ) {
+        foreach my $address ( $parent->dns->find_addresses( $ns, $qclass ) ) {
+            my $ip = Net::IP->new( $address );
 
-            if ($ip->version == 4 and $parent->config->get("net")->{ipv4}) {
+            if ( $ip->version == 4 and $parent->config->get( "net" )->{ipv4} ) {
                 $nameservers{$address} = $address;
             }
 
-            if ($ip->version == 6 and $parent->config->get("net")->{ipv6}) {
+            if ( $ip->version == 6 and $parent->config->get( "net" )->{ipv6} ) {
                 $nameservers{$address} = $address;
             }
         }
     }
 
-    foreach my $address (keys %nameservers) {
-        my $packet =
-          $parent->dns->query_explicit($zone, $qclass, "SOA", $address);
+    foreach my $address ( keys %nameservers ) {
+        my $packet = $parent->dns->query_explicit( $zone, $qclass, "SOA", $address );
 
-        next unless ($packet);
+        next unless ( $packet );
 
-        foreach my $rr ($packet->answer) {
-            next unless ($rr->type eq "SOA");
+        foreach my $rr ( $packet->answer ) {
+            next unless ( $rr->type eq "SOA" );
 
             my $serial = $rr->serial;
 
-            my $digest = sha1_hex(
-                join(':',
-                    $rr->mname, $rr->rname,  $rr->refresh,
-                    $rr->retry, $rr->expire, $rr->minimum)
-            );
+            my $digest = sha1_hex( join( ':', $rr->mname, $rr->rname, $rr->refresh, $rr->retry, $rr->expire, $rr->minimum ) );
 
-            $logger->auto("CONSISTENCY:SOA_SERIAL_AT_ADDRESS",
-                $address, $serial);
-            $logger->auto("CONSISTENCY:SOA_DIGEST_AT_ADDRESS",
-                $address, $digest);
+            $logger->auto( "CONSISTENCY:SOA_SERIAL_AT_ADDRESS", $address, $serial );
+            $logger->auto( "CONSISTENCY:SOA_DIGEST_AT_ADDRESS", $address, $digest );
 
             $serial_counter{$serial}++;
             $digest_counter{$digest}++;
@@ -107,23 +101,63 @@ sub test {
     my $unique_serials = scalar keys %serial_counter;
     my $unique_digests = scalar keys %digest_counter;
 
-    if ($unique_serials > 1) {
-        $logger->auto("CONSISTENCY:SOA_SERIAL_DIFFERENT", $unique_serials);
-    } else {
-        $logger->auto("CONSISTENCY:SOA_SERIAL_CONSISTENT");
+    if ( $unique_serials > 1 ) {
+        $logger->auto( "CONSISTENCY:SOA_SERIAL_DIFFERENT", $unique_serials );
+    }
+    else {
+        $logger->auto( "CONSISTENCY:SOA_SERIAL_CONSISTENT" );
     }
 
-    if ($unique_digests > 1) {
-        $logger->auto("CONSISTENCY:SOA_DIGEST_DIFFERENT", $unique_digests);
-    } else {
-        $logger->auto("CONSISTENCY:SOA_DIGEST_CONSISTENT");
+    if ( $unique_digests > 1 ) {
+        $logger->auto( "CONSISTENCY:SOA_DIGEST_DIFFERENT", $unique_digests );
+    }
+    else {
+        $logger->auto( "CONSISTENCY:SOA_DIGEST_CONSISTENT" );
     }
 
   DONE:
-    $logger->auto("CONSISTENCY:END", $zone);
+
+    $self->test_nssets( $zone );
+
+    $logger->auto( "CONSISTENCY:END", $zone );
     $logger->module_stack_pop();
 
     return 0;
+}
+
+sub test_nssets {
+    my $self = shift;
+    my $zone = shift;
+
+    my $parent = $self->parent;
+    my $qclass = $self->qclass;
+    my $logger = $self->logger;
+    my $errors = 0;
+
+    return 0 unless $parent->config->should_run;
+
+    my @parent_ns = $parent->dns->get_nameservers_at_parent( $zone, $qclass );
+    my %sets;
+
+    foreach my $nsname ( @parent_ns ) {
+        my @addrs = $parent->dns->find_addresses( $nsname, $qclass );
+        foreach my $addr ( @addrs ) {
+            my $p = $parent->dns->query_explicit( $zone, $qclass, 'NS', $addr );
+            if ( $p ) {
+                my @nsset = sort map { $_->string } grep { $_->type eq 'NS' } $p->answer;
+                my $tmp = join( '|', @nsset );
+                $logger->auto( 'CONSISTENCY:NS_SET_AT', $addr, $tmp );
+                $sets{$tmp} += 1;
+            }
+        }
+    }
+
+    if ( keys %sets > 1 ) {
+        return $logger->auto( 'CONSISTENCY:MULTIPLE_NS_SETS', $zone );
+    }
+    else {
+        return $logger->auto( 'CONSISTENCY:NS_SETS_OK', $zone );
+    }
 }
 
 1;

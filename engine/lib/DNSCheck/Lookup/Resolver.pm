@@ -33,6 +33,7 @@ package DNSCheck::Lookup::Resolver;
 require 5.010001;
 use warnings;
 use strict;
+use utf8;
 
 use YAML;
 use Net::IP;
@@ -107,7 +108,7 @@ sub logger {
 sub times {
     my $self = shift;
 
-    $self->{times} ||= {};
+    $self->{times} //= {};
     return $self->{times};
 }
 
@@ -262,8 +263,8 @@ sub fake_ds_packet {
     my $zone = shift;
 
     my $p = Net::DNS::Packet->new;
-    foreach my $rr (@{ $self->{fake}{ds}{$zone} }) {
-        $p->unique_push('answer', $rr);
+    foreach my $rr ( @{ $self->{fake}{ds}{$zone} } ) {
+        $p->unique_push( 'answer', $rr );
     }
 
     return $p;
@@ -304,7 +305,7 @@ sub get_preload_data {
     $res->nameservers( $source ) if defined( $source );
     my $z = $res->send( '.', 'IN', 'NS' );
 
-    if ( !defined( $z ) or $z->header->ancount == 0 ) {
+    if ( !defined( $z ) or scalar( $z->answer ) == 0 ) {
         croak "Failed to get root zone data";
     }
 
@@ -318,7 +319,7 @@ sub get_preload_data {
         $nsname = $self->canonicalize_name( $nsname );
 
         my $a = $res->send( $nsname, 'IN', 'A' );
-        next if ( !defined( $a ) or $a->header->ancount == 0 );
+        next if ( !defined( $a ) or scalar( $a->answer ) == 0 );
         foreach my $rr ( $a->answer ) {
             next unless $rr->type eq 'A';
 
@@ -326,7 +327,7 @@ sub get_preload_data {
         }
 
         my $aaaa = $res->send( $nsname, 'IN', 'AAAA' );
-        next if ( !defined( $aaaa ) or $aaaa->header->ancount == 0 );
+        next if ( !defined( $aaaa ) or scalar( $aaaa->answer ) == 0 );
         foreach my $rr ( $aaaa->answer ) {
             next unless $rr->type eq 'AAAA';
 
@@ -393,7 +394,8 @@ sub highest_known_ns {
 
     my @candidates;
     while ( 1 ) {
-        my @tmp = $self->simple_names_to_ips( keys %{ $self->{cache}{ns}{$name} } )
+        my @tmp;
+        @tmp = $self->simple_names_to_ips( keys %{ $self->{cache}{ns}{$name} } )
           if $self->{cache}{ns}{$name};
         push @candidates, @tmp if @tmp;
 
@@ -459,8 +461,8 @@ sub names_to_ips {
 sub get {
     my $self  = shift;
     my $name  = shift;
-    my $type  = shift || 'NS';
-    my $class = shift || 'IN';
+    my $type  = shift // 'NS';
+    my $class = shift // 'IN';
     my @ns    = @_;
 
     print STDERR "get: $name $type $class @ns " . ( caller( 1 ) )[3] . "\n"
@@ -468,12 +470,8 @@ sub get {
 
     @ns =
       map { $_->ip }
-          grep {
-              ( $_->version == 4 and $self->config->get('net')->{ipv4} )
-              or
-              ( $_->version == 6 and $self->config->get('net')->{ipv6} )
-              } 
-              map { Net::IP->new( $_ ) } @ns;
+      grep { ( $_->version == 4 and $self->config->get( 'net' )->{ipv4} ) or ( $_->version == 6 and $self->config->get( 'net' )->{ipv6} ) }
+      map { Net::IP->new( $_ ) } @ns;
 
     return unless @ns;
 
@@ -528,9 +526,9 @@ sub trace {
 
 sub recurse {
     my ( $self, $name, $type, $class, $cnames ) = @_;
-    $type   ||= 'NS';
-    $class  ||= 'IN';
-    $cnames ||= {};
+    $type   //= 'NS';
+    $class  //= 'IN';
+    $cnames //= {};
 
     print STDERR "recurse: $name $type $class\n" if $self->{debug};
 
@@ -569,7 +567,7 @@ sub recurse {
             $candidate = $p unless $candidate;
             next;
         }
-        elsif ( $p->header->ancount > 0 and grep { $_->type eq 'CNAME' } $p->answer ) {
+        elsif ( scalar( $p->answer ) > 0 and grep { $_->type eq 'CNAME' } $p->answer ) {
             print STDERR "recurse: Resolving non-auth CNAME.\n"
               if $self->{debug};
             my $cnamerr = ( grep { $_->type eq 'CNAME' } $p->answer )[0];
@@ -590,7 +588,7 @@ sub recurse {
         elsif ( $self->matches( $p, $name, $type, $class ) ) {
             return $p;
         }
-        elsif ( $p->header->nscount > 0 ) {
+        elsif ( scalar( $p->authority ) > 0 ) {
 
             my $zname = ( $p->authority )[0]->name;
             my $m = $self->matching_labels( $name, $zname );
@@ -613,10 +611,11 @@ sub recurse {
                 push @stack, grep { !$seen{$_} } $self->simple_names_to_ips( @fns );
             }
             else {
-                push @stack, grep { !$seen{$_} } $self->names_to_ips(
-                    map { $_->nsdname }
+                push @stack,
+                  grep { !$seen{$_} } $self->names_to_ips(
+                    map  { $_->nsdname }
                     grep { $_->type eq 'NS' } $p->authority
-                );
+                  );
             }
             next;
         }

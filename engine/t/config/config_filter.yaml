@@ -16,15 +16,9 @@ logging:
   interactive: 0
   locale: ~
 
-smtp:
-  enable: 1
-  hostname: gurksallad
-  timeout: 20
-
 net:
     ipv4: 1
     ipv6: 1
-    smtp: 1
     v4root: 
         - origin.asnlookup.iis.se
         - origin.asn.cymru.com
