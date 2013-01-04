@@ -86,11 +86,11 @@ push @reserved_ipv4, Net::IP->new( '100.64.0.0/10' );
 
 # 6to4 anycast
 
-push @unsuitable_ipv4, Net::IP->new('192.88.99.0/24');
+push @unsuitable_ipv4, Net::IP->new( '192.88.99.0/24' );
 
 # Teredo
 
-push @unsuitable_ipv6, Net::IP->new('2001::/32');
+push @unsuitable_ipv6, Net::IP->new( '2001::/32' );
 
 ######################################################################
 

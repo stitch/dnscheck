@@ -53,6 +53,7 @@ sub test {
     $logger->logname( $zone );
 
     $logger->module_stack_push();
+    ## no critic (Modules::RequireExplicitInclusion)
     $logger->auto( "ZONE:BEGIN", $zone, $DNSCheck::VERSION );
 
     if ( $parent->host->host_syntax( $zone ) ) {

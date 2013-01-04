@@ -38,6 +38,7 @@ use utf8;
 use base 'DNSCheck::Test::Common';
 
 use Net::IP 1.25 qw(ip_get_version);
+use Net::DNS;
 
 ######################################################################
 
@@ -76,9 +77,7 @@ sub test {
 ################################################################
 
 sub mname_is_ns {
-    my $soa    = shift;
-    my $logger = shift;
-    my @ns     = @_;
+    my ( $soa, $logger, @ns ) = @_;
 
     foreach my $rr ( @ns ) {
         if ( $rr->type eq 'CNAME' ) {

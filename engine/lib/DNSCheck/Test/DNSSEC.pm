@@ -209,7 +209,7 @@ sub test {
         goto DONE;
     }
 
-    if ( !$ds and $dnskey and !$faked_zone ) {
+    if ( not $ds and $dnskey and not $faked_zone ) {
         $errors += $logger->auto( "DNSSEC:MISSING_DS", $zone );
     }
 

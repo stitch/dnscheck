@@ -110,8 +110,7 @@ sub test_by_ip {
 }
 
 sub _test_ip {
-    my $self      = shift;
-    my @addresses = @_;
+    my ( $self, @addresses ) = @_;
 
     my $parent     = $self->parent;
     my $zone       = $self->zone;
@@ -234,6 +233,8 @@ sub ns_check_id {
             }
         }
     }
+
+    return;
 }
 
 ################################################################

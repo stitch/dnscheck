@@ -150,7 +150,8 @@ sub test_as_diversity {
 }
 
 sub _clean_list {
-    my ( $head, @tail ) = sort { $a->[1]->prefixlen <=> $b->[1]->prefixlen } @_;
+    my @args = @_;
+    my ( $head, @tail ) = sort { $a->[1]->prefixlen <=> $b->[1]->prefixlen } @args;
     my @tmp = ();
 
     return unless $head;

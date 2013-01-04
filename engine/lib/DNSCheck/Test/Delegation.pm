@@ -287,7 +287,7 @@ sub ns_parent_child_matching {
     # REQUIRE: all NS at parent must exist at child [IIS.KVSE.001.01/r2]
     my @ns_at_both;
     foreach my $ns ( @ns_at_parent ) {
-        unless ( scalar grep( /^\Q$ns\E$/i, @ns_at_child ) ) {
+        unless ( scalar grep { /^\Q$ns\E$/i } @ns_at_child ) {
             $errors += $self->logger->auto( "DELEGATION:EXTRA_NS_PARENT", $ns );
         }
         else {
@@ -309,7 +309,7 @@ sub ns_parent_child_matching {
 
     # REQUIRE: all NS at child may exist at parent
     foreach my $ns ( @ns_at_child ) {
-        unless ( scalar grep( /^$ns$/i, @ns_at_parent ) ) {
+        unless ( scalar grep { /^$ns$/i } @ns_at_parent ) {
             $self->logger->auto( "DELEGATION:EXTRA_NS_CHILD", $ns );
         }
     }
@@ -368,7 +368,7 @@ sub check_history {
 
     # do not check current nameservers
     foreach my $ns ( @$previous ) {
-        unless ( grep( /^$ns$/, @$current ) ) {
+        unless ( grep { /^$ns$/ } @$current ) {
             push @old, $ns;
         }
     }
@@ -396,6 +396,7 @@ sub check_history {
 
 sub in_zone_ns_glue {
     my ( $self, $zone ) = @_;
+    my $errors = 0;
 
     return unless $self->parent->config->should_run;
 
@@ -403,10 +404,12 @@ sub in_zone_ns_glue {
     my @ns_at_parent = $self->parent->dns->get_nameservers_at_parent( $zone, $self->qclass );
 
     foreach my $ns ( @ns_at_parent ) {
-        if ( $ns =~ /\Q$zone\E$/ and !$glue{$ns} ) {
-            $self->logger->auto( "DELEGATION:INZONE_NS_WITHOUT_GLUE", $ns, $zone );
+        if ( $ns =~ /\Q$zone\E$/ and not $glue{$ns} ) {
+            $errors += $self->logger->auto( "DELEGATION:INZONE_NS_WITHOUT_GLUE", $ns, $zone );
         }
     }
+
+    return $errors;
 }
 
 sub cname_as_ns {
