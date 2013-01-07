@@ -67,6 +67,8 @@ sub flush {
     my $self = shift;
 
     $self->{asn} = ();
+
+    return;
 }
 
 sub lookup {

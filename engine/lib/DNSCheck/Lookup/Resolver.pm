@@ -39,6 +39,9 @@ use YAML;
 use Net::IP;
 use Time::HiRes qw[gettimeofday tv_interval];
 use Carp;
+use Net::DNS::Resolver;
+use Net::DNS::Packet;
+use Net::DNS::RR;
 
 # In order to be able to know for sure where certain information comes from,
 # and/or modify parts of resolver chains, we need to do our own recursive
@@ -83,6 +86,7 @@ sub new {
 }
 
 # Standard utility methods
+## no critic (Subroutines::RequireArgUnpacking)
 sub resolver {
     return $_[0]->{resolver};
 }
@@ -105,6 +109,7 @@ sub logger {
 
 # Timing information
 
+## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub times {
     my $self = shift;
 
@@ -305,7 +310,7 @@ sub get_preload_data {
     $res->nameservers( $source ) if defined( $source );
     my $z = $res->send( '.', 'IN', 'NS' );
 
-    if ( !defined( $z ) or scalar( $z->answer ) == 0 ) {
+    if ( not defined( $z ) or scalar( $z->answer ) == 0 ) {
         croak "Failed to get root zone data";
     }
 
@@ -319,7 +324,7 @@ sub get_preload_data {
         $nsname = $self->canonicalize_name( $nsname );
 
         my $a = $res->send( $nsname, 'IN', 'A' );
-        next if ( !defined( $a ) or scalar( $a->answer ) == 0 );
+        next if ( not defined( $a ) or scalar( $a->answer ) == 0 );
         foreach my $rr ( $a->answer ) {
             next unless $rr->type eq 'A';
 
@@ -327,7 +332,7 @@ sub get_preload_data {
         }
 
         my $aaaa = $res->send( $nsname, 'IN', 'AAAA' );
-        next if ( !defined( $aaaa ) or scalar( $aaaa->answer ) == 0 );
+        next if ( not defined( $aaaa ) or scalar( $aaaa->answer ) == 0 );
         foreach my $rr ( $aaaa->answer ) {
             next unless $rr->type eq 'AAAA';
 

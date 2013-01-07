@@ -46,6 +46,10 @@ use Crypt::OpenSSL::Random qw(random_bytes);
 use Digest::SHA qw(sha1);
 use Digest::BubbleBabble qw(bubblebabble);
 
+# Unneccesary uses to placate Perl::Critic
+use DNSCheck::Lookup::Resolver;
+use Net::DNS::Resolver;
+
 ######################################################################
 
 sub new {
@@ -103,6 +107,8 @@ sub flush {
     $self->{cache}{parent}   = ();
     $self->{cache}{child}    = ();
     $self->{blacklist}       = ();
+
+    return;
 }
 
 sub parent {
@@ -380,12 +386,7 @@ sub query_explicit {
 ######################################################################
 
 sub _query_multiple {
-    my $self   = shift;
-    my $qname  = shift;
-    my $qclass = shift;
-    my $qtype  = shift;
-    my $flags  = shift;
-    my @target = @_;
+    my ( $self, $qname, $qclass, $qtype, $flags, @target ) = @_;
 
     # set up resolver
     my $resolver = $self->_setup_resolver( $flags );
@@ -585,6 +586,8 @@ sub init_nameservers {
     unless ( $self->{nameservers}{$qname}{$qclass}{ns} ) {
         $self->_init_nameservers_helper( $qname, $qclass );
     }
+
+    return;
 }
 
 sub _init_nameservers_helper {
@@ -646,7 +649,7 @@ sub _init_nameservers_helper {
     $self->{nameservers}{$qname}{$qclass}{ipv4} = [ keys %nsv4 ];
     $self->{nameservers}{$qname}{$qclass}{ipv6} = [ keys %nsv6 ]
       if ( keys %nsv6 ) > 0;
-    $self->logger->auto( "DNS:NAMESERVERS_INITIALIZED", $qname, $qclass );
+    return $self->logger->auto( "DNS:NAMESERVERS_INITIALIZED", $qname, $qclass );
 }
 
 ######################################################################
@@ -874,7 +877,7 @@ sub check_axfr {
     }
 
     # set up resolver
-    my $resolver = new Net::DNS::Resolver;
+    my $resolver = Net::DNS::Resolver->new;
     $resolver->debug( $self->{debug_resolver} );
     $resolver->recurse( 0 );
     $resolver->dnssec( 0 );
@@ -970,10 +973,10 @@ sub _querible {
     my $address = shift;
     my $conf    = $self->parent->config->get( "net" );
 
-    my $ip = new Net::IP( $address );
+    my $ip = Net::IP->new( $address );
 
-    if (   ( $ip->version == 4 and !$conf->{ipv4} )
-        or ( $ip->version == 6 and !$conf->{ipv6} ) )
+    if (   ( $ip->version == 4 and not $conf->{ipv4} )
+        or ( $ip->version == 6 and not $conf->{ipv6} ) )
     {
         return 0;
     }
@@ -992,6 +995,8 @@ sub clear_blacklist {
     my $self = shift;
 
     $self->{blacklist} = ();
+
+    return;
 }
 
 sub add_blacklist {
@@ -1002,6 +1007,8 @@ sub add_blacklist {
     my $qtype  = shift;
 
     $self->{blacklist}{$qaddr}{$qname}{$qclass}{$qtype} = 1;
+
+    return;
 }
 
 sub check_blacklist {
