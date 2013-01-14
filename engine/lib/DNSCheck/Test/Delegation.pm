@@ -90,6 +90,7 @@ sub test {
     $errors += $self->consistent_glue( $zone );
     $errors += $self->in_zone_ns_glue( $zone );
     $errors += $self->cname_as_ns( $zone );
+    $errors += $self->referral_size( $zone );
 
     # Test old namservers if we have history
     if ( $history ) {
@@ -453,6 +454,24 @@ sub cname_as_ns {
 ### Truncated referral test
 ###
 
+sub referral_size {
+    my ( $self, $zone ) = @_;
+
+    my %data;
+    foreach my $nsname ( $self->parent->dns->get_nameservers_at_child( $zone, 'IN' ) ) {
+        $data{$nsname} = [ $self->parent->dns->find_addresses( $nsname, 'IN' ) ];
+    }
+
+    my $min_size = $self->min_packet_length($zone, %data);
+    $self->parent->logger->auto('DELEGATION:MIN_REFERRAL_SIZE', $zone, $min_size);
+
+    if ($min_size <= 512) {
+        return $self->parent->logger->auto( 'DELEGATION:MIN_REFERRAL_SIZE_OK', $zone );
+    } else {
+        return $self->parent->logger->auto( 'DELEGATION:MIN_REFERRAL_SIZE_TOO_BIG', $zone, $min_size );
+    }
+}
+
 # Make up a name of maximum length in the given domain
 sub _max_length_name_for {
     my ( $top ) = @_;
@@ -494,8 +513,8 @@ sub min_packet_length {
     my @candidates = sort { length( $a ) <=> length( $b ) } grep { /\Q$topdomain\E\.?$/ } keys %data;
 
     # Go through the names adding one A and one AAAA glue record.
+    my ( $v6, $v4 );
     foreach my $name ( @candidates ) {
-        state( $v6, $v4 );
         foreach my $addr ( @{ $data{$name} } ) {
             my $rr;
 
@@ -587,6 +606,20 @@ to A or AAAA queries.
 =item ->in_zone_ns_glue($zone)
 
 Checks that all in-zone nameserver records come with glue.
+
+=item referral_size($zone)
+
+Fetches NS data from child servers, and verifies that a referral packet of at most 512 octets can be built from the returned information.
+
+=item _max_length_name_for($name)
+
+Internal utility function (not method) that takes a domain name and returns a made-up maximally long name with the given name as a suffix.
+
+=item min_packet_length($zone, %nsdata)
+
+Takes the name of a zone and data about its nameservers, and returns the size in octets of the smallest functional referral packet that can
+be built from the data given a query for a maximally long name. The C<%nsdata> hash should have nameservers names as keys, and references to
+lists of strings with IP addresses (v4 and v6) as values.
 
 =back
 

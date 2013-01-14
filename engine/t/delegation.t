@@ -44,7 +44,7 @@ ok( $testable, 'Zone is testable');
 
 %tags = map {$_->[3] => 1} @{$dc->logger->export};
 
-foreach my $m (qw[NS_AT_PARENT NS_AT_CHILD EXTRA_NS_PARENT NO_COMMON_NS_NAMES EXTRA_NS_CHILD NO_NS_IPV6 ]) {
+foreach my $m (qw[NS_AT_PARENT NS_AT_CHILD EXTRA_NS_PARENT NO_COMMON_NS_NAMES EXTRA_NS_CHILD NO_NS_IPV6 MIN_REFERRAL_SIZE_OK ]) {
     ok($tags{"DELEGATION:$m"}, "DELEGATION:$m");
 }
 $dc->logger->clear;
