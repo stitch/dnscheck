@@ -72,5 +72,43 @@ foreach my $m (qw[INZONE_NS_WITHOUT_GLUE]) {
 }
 $dc->logger->clear;
 
+my %data = (
+          'eeeee.ns.se' => [
+                             '81.228.10.57'
+                           ],
+          'aaaaaaaaa.ns.se' => [
+                                 '2a01:3f0:0:301::53',
+                                 '192.36.144.107'
+                               ],
+          'ggg.ns.se' => [
+                           '2001:6b0:e:3::1',
+                           '130.239.5.114'
+                         ],
+          'ffff.ns.se' => [
+                            '2a01:3f0:0:305::53',
+                            '192.71.53.53'
+                          ],
+          'j.ns.se' => [
+                         '199.254.63.1',
+                         '199.254.63.2',
+                         '199.254.63.3'
+                       ],
+          'ii.ns.se' => [
+                          '2001:67c:1010:5::53',
+                          '194.146.106.22'
+                        ],
+          'ccccccc.ns.se' => [
+                               '2001:67c:2554:301::53',
+                               '192.36.135.107'
+                             ],
+          'dddddd.ns.se' => [
+                              '81.228.8.16'
+                            ],
+          'bbbbbbbb.ns.se' => [
+                                '2001:67c:254c:301::53',
+                                '192.36.133.107'
+                              ]
+        );
+is($dc->delegation->min_packet_length('se', %data), 497, 'Minimum referral size');
 
 done_testing();

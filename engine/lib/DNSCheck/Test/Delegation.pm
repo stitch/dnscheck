@@ -30,13 +30,15 @@
 
 package DNSCheck::Test::Delegation;
 
-require 5.010001;
+use 5.010001;
 use warnings;
 use strict;
 use utf8;
 
 use base 'DNSCheck::Test::Common';
 use Net::IP qw[:PROC];
+use Net::DNS::Packet;
+use Net::DNS::RR;
 
 ######################################################################
 
@@ -445,6 +447,76 @@ sub cname_as_ns {
     }
 
     return $error;
+}
+
+###
+### Truncated referral test
+###
+
+# Make up a name of maximum length in the given domain
+sub _max_length_name_for {
+    my ( $top ) = @_;
+    my @chars = 'A' .. 'Z';
+
+    my $name = '';
+    $name = $top;
+
+    $name .= '.' if $name !~ m/\.$/;
+
+    while ( length( $name ) < 253 ) {
+        my $len = 253 - length( $name );
+        $len = 63 if $len > 63;
+        $name = join( '', map { $chars[ rand @chars ] } 1 .. $len ) . '.' . $name;
+    }
+
+    return $name;
+}
+
+# Return the length in bytes of the smallest valid referal packet. In
+# order to be valid, the packet must contain NS records for all
+# nameservers. If there are any in-zone nameservers, there must be at
+# least one A glue record. If any of the in-zone nameservers have IPv6
+# addresses, there must also be an AAAA glue record.
+sub min_packet_length {
+    my ( $self, $topdomain, %data ) = @_;
+
+    # Create a packet with an NS query for the given domain
+    my $p = Net::DNS::Packet->new( _max_length_name_for( '.' . $topdomain ), 'NS', 'IN' );
+
+    # Add NS records for all given nameservers to Authority section
+    foreach my $name ( keys %data ) {
+        my $rr = Net::DNS::RR->new( sprintf( '%s 3600 IN NS %s', $topdomain, $name ) );
+
+        $p->unique_push( authority => $rr );
+    }
+
+    # Names that need glue, in order from shortest to longest
+    my @candidates = sort { length( $a ) <=> length( $b ) } grep { /\Q$topdomain\E\.?$/ } keys %data;
+
+    # Go through the names adding one A and one AAAA glue record.
+    foreach my $name ( @candidates ) {
+        state( $v6, $v4 );
+        foreach my $addr ( @{ $data{$name} } ) {
+            my $rr;
+
+            if ( $addr =~ /:/ ) {
+                if ( !$v6 ) {
+                    $rr = Net::DNS::RR->new( sprintf( '%s 3600 IN AAAA %s', $name, $addr ) );
+                    $v6 = 1;
+                }
+            }
+            else {
+                if ( !$v4 ) {
+                    $rr = Net::DNS::RR->new( sprintf( '%s 3600 IN A %s', $name, $addr ) );
+                    $v4 = 1;
+                }
+            }
+
+            $p->unique_push( additional => $rr );
+        }
+    }
+
+    return length( $p->data );
 }
 
 1;

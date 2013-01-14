@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+use 5.010001;
+use strict;
+use warnings;
+use utf8;
+
+use DNSCheck;
+use Getopt::Long;
+
+my $silent     = 0;
+my $help       = 0;
+my $delegation = DNSCheck->new->delegation;
+
+GetOptions(
+    'quiet|q' => \$silent,
+    'help|h'  => \$help,
+);
+
+my $topdomain = shift( @ARGV );
+
+if ( $help or not $topdomain ) {
+    say "usage: $0 [-q|--quiet] [-h|--help] domain nsname/nsaddr ...";
+    exit( 2 );
+}
+
+my %data;
+foreach my $line ( @ARGV ) {
+    my ( $name, $address ) = split( /\//, $line );
+
+    push @{ $data{$name} }, $address;
+}
+
+if ( $delegation->min_packet_length( $topdomain, %data ) <= 512 ) {
+    say 'PASS' unless $silent;
+    exit( 0 );
+}
+else {
+    say 'FAIL' unless $silent;
+    exit( 1 );
+}
