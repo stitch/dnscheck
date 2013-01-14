@@ -52,9 +52,9 @@ messages:
     descr: IP adresa je ohlášena autonomním systémem (AS).
     format: 'Jmenný server %s ohlášen announced by: %s'
   CONNECTIVITY:ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: Jmenné servery zóny jsou umístěny ve více autonomních systémech.
-    format: Zóna ohlášena více, než jedním ASN (%s).
+    format: Zóna ohlášena více, než jedním ASN.
   CONNECTIVITY:ASN_LIST:
     args: 1
     format: 'Zóná ohlášena, IPv4 ASN: %s'
@@ -73,17 +73,17 @@ messages:
     descr: IP adresa není ohlášena v žádném autonomním systému a s největší pravděpodobností je na internetu nedostupná.
     format: Jmenný server %s není ohlášen žádným AS.
   CONNECTIVITY:TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: "Jmenné servery zóny se nacházejí ve stejném (nebo žádném) autonomním systému."
-    format: Zóna je ohlášena méně, než dvěma IPv4 ASN (%s).
+    format: Zóna je ohlášena méně, než dvěma IPv4 ASN.
   CONNECTIVITY:V6_ANNOUNCED_BY_ASN:
     args: 2
     descr: IP adresa je ohlášena autonomním systémem (AS).
     format: 'Jmenný server %s je ohlášen přes IPv6 by: %s'
   CONNECTIVITY:V6_ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: Jmenné servery zóny se nacházejí ve více autonomních systémech.
-    format: Zóna je ohlášena více než jedním IPv6 ASN (%s).
+    format: Zóna je ohlášena více než jedním IPv6 ASN.
   CONNECTIVITY:V6_ASN_LIST:
     args: 1
     format: 'Zóna ohlášena IPv6 ASN: %s'
@@ -96,9 +96,9 @@ messages:
     descr: IP adresa není ohlášena v žádném autonomním systému a s největší pravděpodobností je na internetu nedostupná.
     format: Jmenný server %s není ohlášen žádným IPv6 AS.
   CONNECTIVITY:V6_TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: "Jmenné servery zóny se nacházejí ve stejném (nebo žádném) autonomním systému."
-    format: Zóna je ohlášena méně než dvěma IPv6 ASN (%s).
+    format: Zóna je ohlášena méně než dvěma IPv6 ASN.
   CONSISTENCY:BEGIN:
     args: 1
     format: Začíná testování konzistence zóny pro %s.
@@ -125,6 +125,15 @@ messages:
     args: 1
     descr: 'SOA sériové číslo není stejné na všech jmenných serverech. Toto je většinou způsobeno chybným nastavením, ale může to být také výsledek pomalé propagace zóny na sekundární jmenné servery.'
     format: 'Nalezeno %s rozdílných sériových čísel.'
+  CONSISTENCY:MULTIPLE_NS_SETS:
+      args: 1
+      format: 'Jmenné servery pro %s neuvádějí totožnou sadu jmenných serverů.'
+  CONSISTENCY:NS_SETS_OK:
+      args: 1
+      format: 'Všechny jmenné servery pro %s uvádějí totožnou sadu jmenných serverů.'
+  CONSISTENCY:NS_SET_AT:
+      args: 2
+      format: 'Jmenný server na %s uvádí sadu jmenných serverů %s'
   DELEGATION:BEGIN:
     args: 1
     format: Začíná testování delegace pro %s.
@@ -654,11 +663,11 @@ messages:
     format: Jmenný server %s (%s) je autoritativní pro %s.
   NAMESERVER:AXFR_CLOSED:
     args: 3
-    format: Jmenný server %s (%s) je uzavřen pro zónu překladu %s.
+    format: Jmenný server %s (%s) nepřijímá žádosti na přenos zóny %s.
   NAMESERVER:AXFR_OPEN:
     args: 3
-    descr: Tento jmenný server přijímá požadavky na přenos zóny od kohokoliv.
-    format: Jmenný server %s (%s) je otevřen pro přenos zóny %s.
+    descr: Tento jmenný server přijímá žádosti na přenos zóny od kohokoliv.
+    format: Jmenný server %s (%s) přijímá žádosti na přenos zóny %s.
   NAMESERVER:AXFR_SKIP:
     args: 3
     descr: 'Jmenný server nebyl testován na přenos zóny, protože neodpověděl dotazy přes TCP.'
@@ -727,7 +736,7 @@ messages:
     format: Jmenný server %s (%s) odpovídá na dotazy přes TCP.
   NAMESERVER:TESTING_AXFR:
     args: 2
-    format: Testování překladu zón pro jmenný server %s (%s).
+    format: Testování přenosu zón pro jmenný server %s (%s).
   NAMESERVER:TESTING_TCP:
     args: 2
     format: Testování TCP dotazů na jmenný server %s na adrese %s.
