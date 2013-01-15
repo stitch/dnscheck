@@ -37,7 +37,7 @@ use utf8;
 
 use base 'DNSCheck::Test::Common';
 
-use Net::IP 1.25 qw(ip_get_version);
+use Net::IP 1.25 qw[ip_get_version];
 
 ######################################################################
 
@@ -154,6 +154,7 @@ sub _test_ip {
         }
 
         $errors += $self->ns_recursive( $address );
+        $errors += $self->same_source( $address );
 
         my $tmp = $self->ns_authoritative( $address );
         $errors += $tmp;
@@ -327,6 +328,32 @@ sub ns_axfr {
     }
     else {
         return $self->logger->auto( "NAMESERVER:AXFR_CLOSED", $nameserver, $address, $zone );
+    }
+}
+
+sub same_source {
+    my $self    = shift;
+    my $address = shift;
+    my $zone    = shift // $self->zone;
+
+    return 0 unless $self->parent->config->should_run;
+
+    my $p = $self->parent->dns->query_explicit( $zone, 'SOA', 'IN', $address );
+    return unless $p;
+
+    my $to = Net::IP->new( $address );
+    return unless $to;
+    $to = $to->ip;
+
+    my $from = Net::IP->new( $p->answerfrom );
+    return unless $from;
+    $from = $from->ip;
+
+    if ( $to eq $from ) {
+        return $self->parent->logger->auto( 'NAMESERVER:SAME_SOURCE', $address );
+    }
+    else {
+        return $self->parent->logger->auto( 'NAMESERVER:NOT_SAME_SOURCE', $address );
     }
 }
 

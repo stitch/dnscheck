@@ -32,6 +32,7 @@ has('zzinazz.se', '91.198.169.5', 0,
     'NAMESERVER:NOT_RECURSIVE',
     'NAMESERVER:UDP_OK',
     'NAMESERVER:TCP_OK',
+    'NAMESERVER:SAME_SOURCE',
 );
 
 has('xyng.se', '82.119.225.103', 1, 'NAMESERVER:NOT_AUTH');
