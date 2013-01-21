@@ -125,6 +125,15 @@ messages:
     args: 1
     descr: 'SOA-serienumret är inte detsamma på alla DNS-servrar. Detta beror vanligtvis på en felkonfiguration, men kan ibland bero på långsam spridning av zonen till sekundära DNS-servrar.'
     format: '%s olika serienummer hittade.'
+  CONSISTENCY:MULTIPLE_NS_SETS:
+      args: 1
+      format: 'De listade namnservrarna för %s rapporterar inte alla samma uppsättning namnservrar.'
+  CONSISTENCY:NS_SETS_OK:
+      args: 1
+      format: 'De listade namnservrarna för %s rapporterar alla samma uppsättning namnservrar.'
+  CONSISTENCY:NS_SET_AT:
+      args: 2
+      format: 'Namnservern %s rapporterar NS-set %s'
   DELEGATION:BEGIN:
     args: 1
     format: Börjar testa delegering av %s.
