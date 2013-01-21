@@ -592,9 +592,15 @@ messages:
   ENGINE:CRASH:
     args: 0
     format: DNSCheck-motorn kraschade.
+  FAKEGLUE:BROKEN_INFO:
+    args: 2
+    format: 'IP-adressen %s (angiven för namnservern %s) är ogiltig.'
   FAKEGLUE:MALFORMED_DS:
-      args: 1
-      format: 'Den givna DS-posten kunde inte tolkas: %s'
+    args: 1
+    format: 'Den givna DS-posten kunde inte tolkas: %s'
+  FAKEGLUE:NO_ADDRESS:
+    args: 1
+    format: 'Namnservern %s har varken A- eller AAAA-post(er).'
   HOST:BEGIN:
     args: 1
     format: Börjar testa värdnamn %s.
