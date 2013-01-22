@@ -77,6 +77,10 @@ push @reserved_ipv6, Net::IP->new( "fc00::/7" );
 push @reserved_ipv6, Net::IP->new( "2001:0db8::/32" );
 push @reserved_ipv6, Net::IP->new( "2001:10::/28" );
 
+push @reserved_ipv6, Net::IP->new( "2002::/16" );
+push @reserved_ipv6, Net::IP->new( "5f00::/8" );
+push @reserved_ipv6, Net::IP->new( "3ffe::/16" );
+
 # Discard-Only (RFC6666)
 push @reserved_ipv6, Net::IP->new( '0100::/64' );
 
