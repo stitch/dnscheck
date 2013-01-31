@@ -233,6 +233,12 @@ messages:
     args: 1
     descr: Only one IPv6 name server was found for the zone. You should always have at least two IPv6 name servers for a zone to be able to handle transient connectivity problems.
     format: Too few IPv6 name servers (%s).
+  DELEGATION:MIN_REFERRAL_SIZE_OK:
+      args: 1
+      format: "It is possible to build a referral packet for %s that works without EDNS0."
+  DELEGATION:MIN_REFERRAL_SIZE_TOO_BIG:
+      args: 2
+      format: "The smallest referral packet we could build for %s was %s bytes, which requires EDNS0 and will not work with old resolvers."
   DNS:ADDRESS_BLACKLISTED:
     args: 4
     format: Name server %s blacklisted.
