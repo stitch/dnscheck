@@ -980,10 +980,6 @@ sub _querible {
     {
         return 0;
     }
-    elsif ( ( $ip->iptype ne "PUBLIC" ) and ( $ip->iptype ne "GLOBAL-UNICAST" ) ) {
-        $self->logger->auto( "DNS:UNQUERIBLE_ADDRESS", $address );
-        return 0;
-    }
     else {
         return 1;
     }
