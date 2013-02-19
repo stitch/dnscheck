@@ -52,7 +52,7 @@ ok(abs($warning_count - 5) < 5,
     "$warning_count WARNING-level results.");
 ok($dc->logger->count_warning == $warning_count);
 my $debug_count = scalar(grep { $_->[2] eq 'DEBUG' } @res);
-ok(abs($debug_count - 662) < 25, "$debug_count DEBUG-level results.");
+ok(abs($debug_count - 662) < 50, "$debug_count DEBUG-level results.");
 ok($dc->logger->count_debug == $debug_count);
 
 my %tag = map {$_->[3] => 1} @{$dc->logger->export};
