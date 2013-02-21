@@ -308,7 +308,7 @@ sub get_preload_data {
 
     my $res = Net::DNS::Resolver->new;
     $res->nameservers( $source ) if defined( $source );
-    my $z = $res->send( '.', 'IN', 'NS' );
+    my $z = eval { $res->send( '.', 'IN', 'NS' ) };
 
     if ( not defined( $z ) or scalar( $z->answer ) == 0 ) {
         croak "Failed to get root zone data";
@@ -323,7 +323,7 @@ sub get_preload_data {
     foreach my $nsname ( keys %{ $cache{ns}{'.'} } ) {
         $nsname = $self->canonicalize_name( $nsname );
 
-        my $a = $res->send( $nsname, 'IN', 'A' );
+        my $a = eval { $res->send( $nsname, 'IN', 'A' ) };
         next if ( not defined( $a ) or scalar( $a->answer ) == 0 );
         foreach my $rr ( $a->answer ) {
             next unless $rr->type eq 'A';
@@ -331,7 +331,7 @@ sub get_preload_data {
             $cache{ips}{$nsname}{ $rr->address } = 1;
         }
 
-        my $aaaa = $res->send( $nsname, 'IN', 'AAAA' );
+        my $aaaa = eval { $res->send( $nsname, 'IN', 'AAAA' ) };
         next if ( not defined( $aaaa ) or scalar( $aaaa->answer ) == 0 );
         foreach my $rr ( $aaaa->answer ) {
             next unless $rr->type eq 'AAAA';
@@ -484,7 +484,7 @@ sub get {
     $self->{resolver}->nameservers( @ns ) if @ns;
 
     my $before   = [ gettimeofday() ];
-    my $p        = $self->{resolver}->send( $name, $class, $type );
+    my $p        = eval { $self->{resolver}->send( $name, $class, $type ) };
     my $duration = tv_interval( $before );
 
     if ( $p and $p->answerfrom ) {
