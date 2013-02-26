@@ -747,7 +747,7 @@ messages:
     args: 3
     format: DNS-servern %s (%s) svarar på anrop via UDP.
   NSTIME:AVERAGE:
-    args: 6
+    args: 7
     format: 'Zon %s, server %s: %s anrop, %sms medel, %sms min, %sms max, %sms standardavvikelse.'
   SMTP:BANNER:
     args: 2

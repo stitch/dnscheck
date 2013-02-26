@@ -735,7 +735,7 @@ messages:
     args: 3
     format: Nameserver %s (%s) geeft antwoord op queries via UDP.
   NSTIME:AVERAGE:
-    args: 6
+    args: 7
     format: 'Zone %s, server %s: %s aanroepen, %sms gemiddeld, %sms min, %sms max, %sms stddev.'
   SMTP:BANNER:
     args: 2

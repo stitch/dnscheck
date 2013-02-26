@@ -91,6 +91,7 @@ sub test {
     $errors += $parent->dnssec->test( $zone );
 
   DONE:
+    $parent->log_nameserver_times($zone);
     $logger->auto( "ZONE:END", $zone );
     $logger->module_stack_pop();
 

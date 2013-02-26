@@ -747,7 +747,7 @@ messages:
     args: 3
     format: Jmenný server %s (%s) odpovídá na dotazy přes UDP.
   NSTIME:AVERAGE:
-    args: 6
+    args: 7
     format: 'Zóna %s, server %s: %s calls, %sms avg, %sms min, %sms max, %sms stddev.'
   SMTP:BANNER:
     args: 2
