@@ -613,6 +613,15 @@ messages:
   DNSSEC:NSEC_FOUND:
       args: 2
       format: "Authenticated denial records found for %s, of type %s."
+  DNSSEC:RRSIG_SHORT_DURATION:
+      args: 2
+      format: "Duration for %s is too short (%s seconds)."
+  DNSSEC:RRSIG_LONG_DURATION:
+      args: 2
+      format: "Duration for %s is too long (%s seconds)."
+  DNSSEC:RRSIG_OK_DURATION:
+      args: 2
+      format: "Duration for %s is OK (%s seconds)."
   ENGINE:CRASH:
     args: 0
     format: DNSCheck engine crashed

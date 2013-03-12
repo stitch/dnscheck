@@ -518,6 +518,7 @@ sub _check_signature {
 
     my $inception  = _parse_timestamp( $rrsig->siginception );
     my $expiration = _parse_timestamp( $rrsig->sigexpiration );
+    my $duration = $expiration - $inception;
 
     my $message = sprintf( "RRSIG(%s/%s/%s/%d)", $rrsig->name, $rrsig->class, $rrsig->typecovered, $rrsig->keytag );
 
@@ -531,6 +532,14 @@ sub _check_signature {
     }
     else {
         $logger->auto( "DNSSEC:RRSIG_EXPIRES_AT", scalar( gmtime( $expiration ) ) );
+    }
+
+    if ($duration < 43200) { # 12 hours
+        $logger->auto('DNSSEC:RRSIG_SHORT_DURATION', $message, $duration);
+    } elsif ($duration > 15552000) { # 180 days
+        $logger->auto('DNSSEC:RRSIG_LONG_DURATION', $message, $duration);
+    } else {
+        $logger->auto('DNSSEC:RRSIG_OK_DURATION', $message, $duration);
     }
 
     if ( $keys and $rrsig->verify( $rrset, $keys ) ) {
