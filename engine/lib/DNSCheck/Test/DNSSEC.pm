@@ -169,7 +169,7 @@ sub test {
     # End of all-child processing.
 
     # NSEC or NSEC3 presence test
-    my $nsecp = $parent->dns->query_child_nocache($zone, 'x--example.' . $zone, $qclass, 'A', $flags);
+    my $nsecp = $parent->dns->query_child_nocache($zone, 'xn--example.' . $zone, $qclass, 'A', $flags);
     my $nsec_rr;
     ($nsec_rr) = grep {$_->type eq 'NSEC' or $_->type eq 'NSEC3'} $nsecp->authority if $nsecp;
     if ($nsec_rr) {
