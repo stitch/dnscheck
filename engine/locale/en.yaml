@@ -607,6 +607,12 @@ messages:
   DNSSEC:NSEC3PARAM_NOT_FOUND:
       args: 1
       format: NSEC3PARAM record was not found for %s.
+  DNSSEC:NSEC_NOT_FOUND:
+      args: 1
+      format: "Authenticated denial records not found for %s."
+  DNSSEC:NSEC_FOUND:
+      args: 2
+      format: "Authenticated denial records found for %s, of type %s."
   ENGINE:CRASH:
     args: 0
     format: DNSCheck engine crashed

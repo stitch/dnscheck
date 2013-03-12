@@ -168,10 +168,21 @@ sub test {
 
     # End of all-child processing.
 
+    # NSEC or NSEC3 presence test
+    my $nsecp = $parent->dns->query_child_nocache($zone, 'x--example.' . $zone, $qclass, 'A', $flags);
+    my $nsec_rr;
+    ($nsec_rr) = grep {$_->type eq 'NSEC' or $_->type eq 'NSEC3'} $nsecp->authority if $nsecp;
+    if ($nsec_rr) {
+        $logger->auto('DNSSEC:NSEC_FOUND', $zone, $nsec_rr->type);
+    } else {
+        $logger->auto('DNSSEC:NSEC_NOT_FOUND', $zone);
+    }
+
     # NESC3 parameter test
     my $nsec3p = $parent->dns->query_child($zone, $zone, $qclass, 'NSEC3PARAM');
 
-    my ($nsec3param_rr) = grep {$_->type eq 'NSEC3PARAM'} $nsec3p->answer if $nsec3p;
+    my $nsec3param_rr;
+    ($nsec3param_rr) = grep {$_->type eq 'NSEC3PARAM'} $nsec3p->answer if $nsec3p;
     if ($nsec3param_rr) {
         $logger->auto( 'DNSSEC:NSEC3PARAM_FOUND', $zone);
         if ($nsec3param_rr->iterations >= 150) {
