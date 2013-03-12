@@ -595,6 +595,18 @@ messages:
   DNSSEC:SOA_VALID_SIGNATURES:
     args: 1
     format: Enough valid signatures over SOA RRset found for %s.
+  DNSSEC:NSEC3PARAM_FOUND:
+      args: 1
+      format: NSEC3PARAM record found for %s.
+  DNSSEC:NSEC3_TOO_MANY_ITERATIONS:
+      args: 2
+      format: "NSEC3 for %s is set to use %s iterations, which is too high."
+  DNSSEC:NSEC3_ITERATIONS_OK:
+      args: 2
+      format: "NSEC3 for %s is set to use %s iterations, which is OK."
+  DNSSEC:NSEC3PARAM_NOT_FOUND:
+      args: 1
+      format: NSEC3PARAM record was not found for %s.
   ENGINE:CRASH:
     args: 0
     format: DNSCheck engine crashed

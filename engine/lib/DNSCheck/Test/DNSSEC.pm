@@ -30,7 +30,7 @@
 
 package DNSCheck::Test::DNSSEC;
 
-require 5.010001;
+use 5.010001;
 use warnings;
 use strict;
 use utf8;
@@ -167,6 +167,21 @@ sub test {
     $packet = $good_packet || $packet;
 
     # End of all-child processing.
+
+    # NESC3 parameter test
+    my $nsec3p = $parent->dns->query_child($zone, $zone, $qclass, 'NSEC3PARAM');
+
+    my ($nsec3param_rr) = grep {$_->type eq 'NSEC3PARAM'} $nsec3p->answer if $nsec3p;
+    if ($nsec3param_rr) {
+        $logger->auto( 'DNSSEC:NSEC3PARAM_FOUND', $zone);
+        if ($nsec3param_rr->iterations >= 150) {
+            $logger->auto('DNSSEC:NSEC3_TOO_MANY_ITERATIONS', $zone, $nsec3param_rr->iterations);
+        } else {
+            $logger->auto('DNSSEC:NSEC3_ITERATIONS_OK', $zone, $nsec3param_rr->iterations);
+        }
+    } else {
+        $logger->auto( 'DNSSEC:NSEC3PARAM_NOT_FOUND', $zone);
+    }
 
     $dnskey = _dissect( $packet, "DNSKEY" );
 
