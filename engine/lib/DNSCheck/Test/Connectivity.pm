@@ -166,10 +166,10 @@ sub _clean_list {
             # Skip this $item
         }
         elsif ( $res == $IP_A_IN_B_OVERLAP ) {
-            say "A in B";
+            croak "Cannot happen, longer prefix encloses shorter";
         }
         elsif ( $res == $IP_B_IN_A_OVERLAP ) {
-            say "B in A";
+            # Skip, $item is enclosed by $head
         }
         elsif ( $res == $IP_PARTIAL_OVERLAP ) {
             croak "Partial";
