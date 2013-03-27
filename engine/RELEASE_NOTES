@@ -1,3 +1,28 @@
+Release Notes for DNSCheck Lib v1.4.0
+=====================================
+
+* Minimum required Perl version is now 5.10.1.
+
+* A couple of new tests:
+
+ - That a minimal referral can fit in a 512-octet packet.
+ - The responses come from the same IP address the question was sent to.
+ - That NSEC or NSEC3 is used in signed zones.
+ - That NSEC3 parameters are sane.
+ - That RRSIG durations are sane.
+
+* CZNIC contributed a Czech translation.
+
+* Reserved IP ranges updated according to new RFCs.
+
+* All tests that made SMTP connections have been removed.
+
+* The CLI script has a --level flag to specify the lowest log level you want printed.
+
+* A new, better algorithm to check nameserver AS distribution.
+
+* Plus of course bug and stability fixes.
+
 Release Notes for DNSCheck Lib v1.3.0
 =====================================
 Notable changes:

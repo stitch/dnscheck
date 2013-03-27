@@ -3,6 +3,7 @@ apps/dnscheck-12hourmailer
 apps/dnscheck-dispatcher
 apps/dnscheck-dnssecmailer
 apps/dnscheck-hostsyntax
+apps/dnscheck-packetcheck
 apps/dnscheck-preflight
 apps/dnscheck-zonediff
 config/config.yaml
@@ -19,8 +20,7 @@ debian/compat
 debian/control
 debian/copyright
 debian/dirs
-debian/dnscheck-dispatcher.sh
-debian/install
+debian/libdnscheck-perl.dnscheck-dispatcher.init
 debian/rules
 doc/call-flow.png
 doc/data-flow-batch.png
@@ -49,7 +49,6 @@ examples/nameserver.pl
 examples/nsid-test.pl
 examples/parent.pl
 examples/registrar.template
-examples/smtp.pl
 examples/soa.pl
 examples/twitterbot.pl
 examples/undelegated.pl
@@ -71,10 +70,10 @@ lib/DNSCheck/Test/DNSSEC.pm
 lib/DNSCheck/Test/Host.pm
 lib/DNSCheck/Test/Mail.pm
 lib/DNSCheck/Test/Nameserver.pm
-lib/DNSCheck/Test/SMTP.pm
 lib/DNSCheck/Test/SOA.pm
 lib/DNSCheck/Test/Zone.pm
 LICENSE
+locale/cz.yaml
 locale/en.yaml
 locale/nl.yaml
 locale/sv.yaml
@@ -89,6 +88,8 @@ t/asn.t
 t/bugs.t
 t/config.t
 t/config/config.yaml
+t/config/config_filter.yaml
+t/config/policy.yaml
 t/connectivity.json
 t/connectivity.t
 t/consistency.json
@@ -128,6 +129,7 @@ util/dumpyaml.pl
 util/load_locales.pl
 util/locale2sql.pl
 util/localecompare.pl
+util/localecreate.pl
 util/perltidyrc
 util/svntidy.sh
 util/tidy.sh
