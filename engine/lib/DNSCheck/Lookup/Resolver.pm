@@ -43,6 +43,8 @@ use Net::DNS::Resolver;
 use Net::DNS::Packet;
 use Net::DNS::RR;
 
+our %times;
+
 # In order to be able to know for sure where certain information comes from,
 # and/or modify parts of resolver chains, we need to do our own recursive
 # lookups rather than rely on an external caching recursive resolver. This
@@ -111,10 +113,7 @@ sub logger {
 
 ## no critic (Subroutines::ProhibitBuiltinHomonyms)
 sub times {
-    my $self = shift;
-
-    $self->{times} //= {};
-    return $self->{times};
+    return \%times;
 }
 
 # Interface methods to underlying Net::DNS::Resolver object
