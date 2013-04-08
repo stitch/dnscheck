@@ -38,7 +38,7 @@ use utf8;
 use base 'DNSCheck::Test::Common';
 
 use Net::DNS 0.59;
-use Net::DNS::SEC 0.14;
+use Net::DNS::SEC 0.16;
 use Date::Parse;
 use POSIX qw(strftime);
 
@@ -59,6 +59,8 @@ sub algorithm_name {
         10  => 'RSA/SHA-512',
         11  => 'Unassigned (11)',
         12  => 'GOST R 34.10-2001',
+        13  => 'ECDSA Curve P-256 with SHA-256',
+        14  => 'ECDSA Curve P-384 with SHA-384',
         252 => 'Reserved (Indirect keys)',
         253 => 'Private algorithm (domain name)',
         254 => 'Private algorithm (OID)',
