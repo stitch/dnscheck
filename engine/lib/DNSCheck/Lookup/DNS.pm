@@ -796,13 +796,45 @@ sub address_is_authoritative {
     my $logger = $self->logger;
     my $errors = 0;
 
-    my $packet = $self->query_explicit( $qname, $qclass, "SOA", $address, { aaonly => 0 } );
+    my $packet = $self->query_explicit( $qname, $qclass, "SOA", $address, { transport => "udp", aaonly => 0 } );
 
     goto DONE unless ( $packet );
 
     # This means that REFUSED or SERVFAIL with the authoritative flag set will
     # register as the server being authoritative for the domain in question.
-    $errors++ if ( $packet->header->aa != 1 );
+    if ( $packet->header->aa != 1 ) {
+        $errors += 1;
+        $self->logger->auto( "NAMESERVER:NOT_AUTH_UDP", $address );
+    }
+    else {
+        $self->logger->auto( "NAMESERVER:AUTH_UDP", $address );
+    }
+
+  DONE:
+    return $errors;
+}
+
+sub address_is_authoritative_tcp {
+    my $self    = shift;
+    my $address = shift;
+    my $qname   = shift;
+    my $qclass  = shift;
+
+    my $logger = $self->logger;
+    my $errors = 0;
+
+    my $packet = $self->query_explicit( $qname, $qclass, "SOA", $address, { transport => "tcp", aaonly => 0 } );
+
+    goto DONE unless ( $packet );
+
+    # See above
+    if ( $packet->header->aa != 1 ) {
+        $errors += 1;
+        $self->logger->auto( "NAMESERVER:NOT_AUTH_TCP", $address );
+    }
+    else {
+        $self->logger->auto( "NAMESERVER:AUTH_TCP", $address );
+    }
 
   DONE:
     return $errors;
