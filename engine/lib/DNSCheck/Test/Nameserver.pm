@@ -270,7 +270,11 @@ sub ns_authoritative {
     # REQUIRE: Nameserver must be authoritative for the zone
     #          [IIS.KVSE.001.01/r3,IIS.KVSE.001.01/r6]
     $self->logger->auto( "NAMESERVER:CHECKING_AUTH", $nameserver, $address );
-    if ( $self->parent->dns->address_is_authoritative( $address, $zone, $self->qclass ) ) {
+    if (
+        $self->parent->dns->address_is_authoritative( $address, $zone, $self->qclass )
+        or
+        $self->parent->dns->address_is_authoritative_tcp( $address, $zone, $self->qclass )
+    ) {
         return $self->logger->auto( "NAMESERVER:NOT_AUTH", $nameserver, $address, $zone );
     }
     else {

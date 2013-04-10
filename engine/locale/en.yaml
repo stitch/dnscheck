@@ -737,6 +737,12 @@ messages:
     args: 3
     descr: 'The name server does not answer authoritatively to queries for the tested domain.  This is probably due to misconfiguration where the name server is not set up to serve the tested domain.'
     format: Name server %s (%s) not authoritative for %s.
+  NAMESERVER:NOT_AUTH_UDP:
+      args: 1
+      format: 'Nameserver at %s is not authoritative over UDP.'
+  NAMESERVER:NOT_AUTH_TCP:
+      args: 1
+      format: 'Nameserver at %s is not authoritative over TCP.'
   NAMESERVER:NOT_RECURSIVE:
     args: 2
     format: Name server %s (%s) is not recursive.
