@@ -60,7 +60,7 @@ use DNSCheck::Lookup::Resolver;
 use DNSCheck::Lookup::ASN;
 use DNSCheck::Logger;
 
-our $VERSION = "1.4.0";
+our $VERSION = "1.4.1";
 
 ######################################################################
 
