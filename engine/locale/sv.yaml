@@ -52,9 +52,9 @@ messages:
     descr: IP-adressen är annonserad av ett autonomt system (AS).
     format: 'DNS-servern %s annonserad av: %s'
   CONNECTIVITY:ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: Zonens DNS-servrar är spridda över mer än ett autonomt system.
-    format: Zon annonserad av fler än ett ASN (%s).
+    format: Zon annonserad av fler än ett ASN.
   CONNECTIVITY:ASN_LIST:
     args: 1
     format: 'Zon annonserad av IPv4 ASN: %s'
@@ -73,17 +73,17 @@ messages:
     descr: IP-adressen är inte annonserad av något autonomt system och är troligtvis inte nåbar på Internet.
     format: DNS-servern %s är inte annonserad av något AS.
   CONNECTIVITY:TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: 'Samtliga DNS-servrar för zonen finns inom samma, (eller inget), autonoma system.'
-    format: Zon annonserad av mindre än 2 IPv4 ASN (%s).
+    format: Zon annonserad av mindre än 2 IPv4 ASN.
   CONNECTIVITY:V6_ANNOUNCED_BY_ASN:
     args: 2
     descr: IP-adressen är annonserad av ett autonomt system (AS).
     format: 'DNS-servern %s annonserad över IPv6 av: %s'
   CONNECTIVITY:V6_ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: Zonens DNS-servrar är spridda över mer än ett autonomt system.
-    format: Zon annonserad av fler än ett IPv6 ASN (%s).
+    format: Zon annonserad av fler än ett IPv6 ASN.
   CONNECTIVITY:V6_ASN_LIST:
     args: 1
     format: 'Zon annonserad av IPv6 ASN: %s'
@@ -96,9 +96,9 @@ messages:
     descr: IP-adressen är inte annonserad av något autonomt system och är troligtvis inte nåbar på Internet.
     format: DNS-servern %s är inte annonserad av något IPv6 AS.
   CONNECTIVITY:V6_TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: 'Samtliga DNS-servrar för zonen finns inom samma, (eller inget), autonoma system.'
-    format: Zon annonserad av mindre än 2 IPv6 ASN (%s).
+    format: Zon annonserad av mindre än 2 IPv6 ASN.
   CONSISTENCY:BEGIN:
     args: 1
     format: Börjar testa att zonen är konsekvent uppsatt för %s.

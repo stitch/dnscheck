@@ -52,9 +52,9 @@ messages:
     descr: Het IP adres wordt geannonceerd door een autonomous system (AS).
     format: 'Name server %s geannonceerd door: %s'
   CONNECTIVITY:ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: De name servers van deze zone bevinden zich in meerdere autonomous systems (AS).
-    format: Zone geannonceerd door meer dan een ASN (%s).
+    format: Zone geannonceerd door meer dan een ASN.
   CONNECTIVITY:ASN_LIST:
     args: 1
     format: 'Zone geannonceerd door IPv4 ASN: %s'
@@ -73,17 +73,17 @@ messages:
     descr: Het IP adres wordt niet geannonceerd door enig autonomous system en is hoogstwaarschijnlijk niet bereikbaar op het Internet.
     format: Name server %s niet geannonceerd door enig AS.
   CONNECTIVITY:TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: De name servers van deze zone bevinden zich allen in hetzelfde (of geen) autonomous system (AS).
-    format: Zone geannonceerd door minder dan twee IPv4 ASN (%s).
+    format: Zone geannonceerd door minder dan twee IPv4 ASN.
   CONNECTIVITY:V6_ANNOUNCED_BY_ASN:
     args: 2
     descr: Het IP adres wordt geannonceerd door een autonomous system (AS).
     format: 'Name server %s geannonceerd via IPv6 door: %s'
   CONNECTIVITY:V6_ASN_COUNT_OK:
-    args: 1
+    args: 0
     descr: De name servers van deze zone bevinden zich in meerdere autonomous systems.
-    format: Zone geannonceerd door meer dan een IPv6 ASN (%s).
+    format: Zone geannonceerd door meer dan een IPv6 ASN.
   CONNECTIVITY:V6_ASN_LIST:
     args: 1
     format: 'Zone geannonceerd door IPv6 ASN: %s'
@@ -96,9 +96,9 @@ messages:
     descr: Het IP adres wordt niet geannonceerd door enig autonomous system en is hoogstwaarschijnlijk niet bereikbaar op het Internet.
     format: Name server %s niet geannonceerd door enig IPv6 AS.
   CONNECTIVITY:V6_TOO_FEW_ASN:
-    args: 1
+    args: 0
     descr: De name servers van deze zone bevinden zich allen in hetzelfde autonomous system.
-    format: Zone geannonceerd door slechts een IPv6 ASN (%s).
+    format: Zone geannonceerd door slechts een IPv6 ASN.
   CONSISTENCY:BEGIN:
     args: 1
     format: Begin zone consistentie test voor %s.
