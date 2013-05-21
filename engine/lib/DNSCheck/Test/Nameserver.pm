@@ -343,14 +343,14 @@ sub same_source {
     return 0 unless $self->parent->config->should_run;
 
     my $p = $self->parent->dns->query_explicit( $zone, 'SOA', 'IN', $address );
-    return unless $p;
+    return 0 unless $p;
 
     my $to = Net::IP->new( $address );
-    return unless $to;
+    return 0 unless $to;
     $to = $to->ip;
 
     my $from = Net::IP->new( $p->answerfrom );
-    return unless $from;
+    return 0 unless $from;
     $from = $from->ip;
 
     if ( $to eq $from ) {
