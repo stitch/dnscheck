@@ -8,12 +8,27 @@
 # Short-Description: Start/stop the DNSCheck dispatcher
 ### END INIT INFO
 
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/bin/dnscheck-dispatcher
+NAME=dnscheck-dispatcher
+DESC="dnscheck dispatcher"
+CONFIG=/etc/dnscheck/config.yaml
+
+test -x $DAEMON || exit 0
+test -f $CONFIG || exit 0
+
+. /lib/lsb/init-functions
+
 start() {
+    log_begin_msg "Starting $DESC:" "$NAME" || true
     /usr/bin/dnscheck-dispatcher
+    log_end_msg $?
 }
 
 stop() {
+    log_begin_msg "Stopping $DESC:" "$NAME"
     /usr/bin/dnscheck-dispatcher --kill
+    log_end_msg $?
 }
 
 case $1 in
