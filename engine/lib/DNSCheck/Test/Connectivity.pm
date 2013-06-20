@@ -125,11 +125,11 @@ sub test_as_diversity {
         $ip = $parent->dns->get_nameservers_ipv6( $zone, $qclass );
     }
     else {
-        croak "Don't know how to hande IP version $ipversion";
+        croak "Don't know how to handle IP version $ipversion";
     }
 
     return 1 if !$ip;
-    my @asdata = _clean_list( map { $parent->asn->asdata( $_ ) } @$ip );
+    my @asdata = $self->_clean_list( map { $parent->asn->asdata( $_ ) } @$ip );
 
     my %count;
     my $total = 0;
@@ -150,7 +150,7 @@ sub test_as_diversity {
 }
 
 sub _clean_list {
-    my @args = @_;
+    my ($self, @args) = @_;
     my ( $head, @tail ) = sort { $a->[1]->prefixlen <=> $b->[1]->prefixlen } @args;
     my @tmp = ();
 
@@ -170,6 +170,7 @@ sub _clean_list {
         }
         elsif ( $res == $IP_B_IN_A_OVERLAP ) {
             # Skip, $item is enclosed by $head
+            $self->parent->logger->auto('ASN:PREFIX_SKIPPED', $item->[1]->prefix);
         }
         elsif ( $res == $IP_PARTIAL_OVERLAP ) {
             croak "Partial";
@@ -179,7 +180,7 @@ sub _clean_list {
         }
     }
 
-    return ( $head, _clean_list( @tmp ) );
+    return ( $head, $self->_clean_list( @tmp ) );
 }
 
 1;
