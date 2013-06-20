@@ -71,87 +71,6 @@ sub flush {
     return;
 }
 
-sub lookup {
-    my $self = shift;
-    my $ip   = shift;
-
-    $self->parent->logger->auto( "ASN:LOOKUP", $ip );
-
-    my $nip = Net::IP->new( $ip );
-
-    if ( !$nip ) {
-        $self->parent->logger->auto( "ASN:INVALID_ADDRESS", $ip );
-        return;
-    }
-    else {
-        $ip = $nip->ip;    # Normalize
-    }
-
-    unless ( $self->{asn}{$ip} ) {
-        $self->{asn}{$ip} = $self->_asn_helper( $nip );
-    }
-
-    my $asn = $self->{asn}{$ip};
-
-    if ( $asn ) {
-        if ( scalar @{$asn} > 0 ) {
-            $self->parent->logger->auto( "ASN:ANNOUNCE_BY", $ip, join( ",", @{$asn} ) );
-        }
-        else {
-            $self->parent->logger->auto( "ASN:NOT_ANNOUNCE", $ip );
-        }
-    }
-    else {
-        $self->parent->logger->auto( "ASN:LOOKUP_ERROR", $ip );
-    }
-
-    return $asn;
-}
-
-sub _asn_helper {
-    my $self = shift;
-    my $ip   = shift;
-    my @r4   = @{ $self->{v4roots} };
-    my @r6   = @{ $self->{v6roots} };
-
-  AGAIN:
-    if ( @r4 == 0 or @r6 == 0 ) {
-
-        # No more roots to try
-        return;
-    }
-
-    my $rev = $ip->reverse_ip;
-    if ( $ip->version == 6 ) {
-        my $r = shift @r6;
-        $rev =~ s/ip6\.arpa/$r/e;
-    }
-    elsif ( $ip->version == 4 ) {
-        my $r = shift @r4;
-        $rev =~ s/in-addr\.arpa/$r/e;
-    }
-    else {
-        croak "Strange IP version: " . $ip->version;
-    }
-
-    my $packet = $self->parent->dns->query_resolver( $rev, 'IN', 'TXT' );
-    goto AGAIN unless $packet;
-
-    my %asn;
-    foreach my $rr ( $packet->answer ) {
-        next unless $rr->type eq 'TXT';
-        foreach my $txt ( $rr->char_str_list ) {
-            my ( $numbers, $res ) = split( / \| /, $txt, 2 );
-            foreach my $n ( split( /\s+/, $numbers ) ) {
-                warn "Strange reply: $txt" unless $n =~ m|^\d+$|;
-                $asn{$n} = 1;
-            }
-        }
-    }
-
-    return [ keys %asn ];
-}
-
 sub asdata {
     my $self = shift;
     my $ip   = shift;
@@ -160,12 +79,20 @@ sub asdata {
 
     if ( !ref( $ip ) ) {
         my $tmp = Net::IP->new( $ip );
-        croak "Broken IP address: $ip\n" unless $tmp;
+        if (!$tmp) {
+            $self->parent->logger->auto( "ASN:INVALID_ADDRESS", $ip );
+            return;
+        }
+
         $ip = $tmp;
+    }
+    if (defined($self->{asn}{$ip->ip})) {
+        return @{$self->{asn}{$ip->ip}}
     }
 
   AGAIN:
     if ( @r4 == 0 or @r6 == 0 ) {    # No more roots to try
+        $self->parent->logger->auto( "ASN:LOOKUP_ERROR", $ip->ip );
         return;
     }
 
@@ -189,12 +116,15 @@ sub asdata {
     foreach my $rr ( $packet->answer ) {
         next unless $rr->type eq 'TXT';
         foreach my $txt ( $rr->char_str_list ) {
+            $self->parent->logger->auto('ASN:RAW', $ip->ip, $rr->txtdata);
             my ( $numbers, $prefix ) = split( / \| /, $txt );
             my @as_set = split( /\s+/, $numbers );
             my $pref = Net::IP->new( $prefix );
 
             croak "broken AS set: @as_set" unless all { /^\d+$/ } @as_set;
             croak "broken prefix: $prefix" unless $pref;
+            $self->parent->logger->auto( "ASN:ANNOUNCE_BY", $ip->ip, join( ",", @as_set ) );
+            $self->parent->logger->auto( "ASN:ANNOUNCE_IN", $ip->ip, $pref->prefix );
 
             push @asdata, [ \@as_set, $pref ];
         }
@@ -202,7 +132,15 @@ sub asdata {
 
     my $max_len = max map { $_->[1]->prefixlen } @asdata;
 
-    return grep { $_->[1]->prefixlen == $max_len } @asdata;
+    my @tmp = grep { $_->[1]->prefixlen == $max_len } @asdata;
+
+    if (scalar(@tmp)==0) {
+        $self->parent->logger->auto( "ASN:NOT_ANNOUNCE", $ip->ip );
+    }
+
+    $self->{asn}{$ip->ip} = \@tmp;
+
+    return @tmp;
 }
 
 1;
@@ -221,11 +159,11 @@ B<asn.cymru.com>.
 
 =head1 METHODS
 
-=head2 lookup($ip)
+=head2 asdata($ip)
 
-Looks up the AS annoucement information for the given IP address. IPv4 and IPv6 
-are supported. The return value is a reference to an array holding zero or more 
-integer values (that is, AS numbers).
+Looks up the AS annoucement information for the given IP address. IPv4 and IPv6 are supported. The return value is a list with zero or more entries, which
+are in turn references to two-element arrays. The first element is another array reference, to a list of AS numbers. The second element is a Net::IP object
+specifying the largest prefix in which the request IP was announced (and which the given AS numbers refer to).
 
 =head2 flush()
 
