@@ -1,0 +1,41 @@
+#!/usr/bin/env perl
+
+use 5.10.1;
+use strict;
+use warnings;
+
+use DNSCheck;
+use Getopt::Long;
+
+my $source_name = 'dnscheck-enqueue';
+my $priority    = 5;
+my $help        = 0;
+
+GetOptions(
+    'source=s'   => \$source_name,
+    'priority=i' => \$priority,
+    'help!'      => \$help,
+);
+
+if ( $help ) {
+    say "usage: $0 [--source=<name>] [--priority=<int>] domain domain domain ...";
+    exit( 2 );
+}
+
+my $dc  = DNSCheck->new;
+my $dbh = $dc->dbh;
+
+if ( not $dbh ) {
+    say 'Failed to connect to database.';
+    exit( 1 );
+}
+
+# Get source id
+$dbh->do( q[INSERT IGNORE INTO source (name) VALUES (?)], undef, $source_name );
+my ( $source_id ) = $dbh->selectrow_array( q[SELECT id FROM source WHERE name = ?], undef, $source_name );
+
+my $sth = $dbh->prepare( q[INSERT INTO queue (domain, priority, source_id) VALUES (?,?,?)] );
+
+foreach my $domain ( @ARGV ) {
+    $sth->execute( $domain, $priority, $source_id );
+}
