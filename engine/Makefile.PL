@@ -7,7 +7,7 @@ use utf8;
 use ExtUtils::MakeMaker;
 use File::ShareDir::Install;
 
-my @exefiles = ( 'apps/dnscheck-packetcheck', 'apps/dnscheck', 'apps/dnscheck-preflight', 'apps/dnscheck-dispatcher', 'apps/dnscheck-zonediff', 'apps/dnscheck-12hourmailer', 'apps/dnscheck-hostsyntax', 'apps/dnscheck-dnssecmailer', );
+my @exefiles = ( 'apps/dnscheck-packetcheck', 'apps/dnscheck', 'apps/dnscheck-preflight', 'apps/dnscheck-dispatcher', 'apps/dnscheck-zonediff', 'apps/dnscheck-12hourmailer', 'apps/dnscheck-hostsyntax', 'apps/dnscheck-dnssecmailer', 'apps/dnscheck-enqueue');
 
 install_share dist => 'locale';
 install_share dist => 'config';
