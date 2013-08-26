@@ -37,6 +37,7 @@ use utf8;
 
 use Time::HiRes qw(time);
 use DNSCheck::Locale;
+use Carp;
 
 ######################################################################
 
@@ -81,6 +82,19 @@ sub new {
     $self->{filters} = ( $config->get( 'filters' ) ) // {};
 
     return bless $self, $class;
+}
+
+sub callback {
+    my ($self, $cref) = @_;
+
+    if ($cref and not (ref($cref) and ref($cref) eq 'CODE') ) {
+        croak "Attempted to set non-coderef as logging callback";
+    }
+
+    my $previous = $self->{callback};
+    $self->{callback} = $cref;
+
+    return $previous;
 }
 
 sub parent {
@@ -158,6 +172,10 @@ sub add {
     $entry->{arg}              = [@args];
 
     push @{ $self->{messages} }, $entry;
+
+    if ($self->{callback}) {
+        $self->{callback}->($entry);
+    }
 
     if ( $self->{interactive} ) {
         $self->print();
@@ -384,6 +402,11 @@ Remove all filters for a given tag.
 =item check_filters($level, $tag, @args)
 
 Used internally to implement the filter functionality.
+
+=item callback($coderef)
+
+Set a coderef that will be called as a method every time a message is added, with the message as its argument. The message will be in the format
+internally used by the logger.
 
 =item ->clear();
 

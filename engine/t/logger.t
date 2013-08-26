@@ -12,9 +12,20 @@ use_ok( 'DNSCheck' );
 my $dc = new_ok( 'DNSCheck' => [ { configdir => './t/config' } ] );
 $dc->config->{disable}{mail}{test} = 0;
 $dc->logger->set_filter( 'SOA:BEGIN', ['iis.se'], 'CRITICAL' );
-$dc->soa->test( 'iis.se' );
 
 my $log = $dc->logger;
+
+eval {
+    $log->callback('not a coderef');
+};
+like($@, qr[Attempted to set non-coderef as logging callback], 'Callback protection works');
+my $cb_counter = 0;
+$log->callback( sub {$cb_counter += 1});
+
+$dc->soa->test( 'iis.se' );
+
+is($cb_counter, 139, 'Callback ran expected number of times');
+
 isa_ok( $log,         'DNSCheck::Logger' );
 isa_ok( $log->locale, 'DNSCheck::Locale' );
 
