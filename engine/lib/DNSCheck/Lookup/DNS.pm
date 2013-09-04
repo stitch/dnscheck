@@ -677,6 +677,10 @@ sub _find_parent_helper {
 
     $self->logger->auto( "DNS:FIND_PARENT_BEGIN", $qname, $qclass );
 
+    if (index($qname, '.') == -1) { # If there is no dot in the name, the parent must be root
+        return '.';
+    }
+
     my ( $first, $second ) = $self->{resolver}->trace( $qname );
     if ( $first ) {
         if ( $first eq $qname or $first . '.' eq $qname ) {
