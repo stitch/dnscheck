@@ -599,11 +599,11 @@ messages:
       args: 1
       format: NSEC3PARAM record found for %s.
   DNSSEC:NSEC3_TOO_MANY_ITERATIONS:
-      args: 2
-      format: "NSEC3 for %s is set to use %s iterations, which is too high."
+      args: 3
+      format: "NSEC3 for %s is set to use %s iterations, which is higher than the limit of %s."
   DNSSEC:NSEC3_ITERATIONS_OK:
-      args: 2
-      format: "NSEC3 for %s is set to use %s iterations, which is OK."
+      args: 3
+      format: "NSEC3 for %s is set to use %s iterations, which is less than %s and thus OK."
   DNSSEC:NSEC3PARAM_NOT_FOUND:
       args: 1
       format: NSEC3PARAM record was not found for %s.

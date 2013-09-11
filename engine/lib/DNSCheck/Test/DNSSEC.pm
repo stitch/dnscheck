@@ -184,13 +184,14 @@ sub test {
     my $nsec3p = $parent->dns->query_child($zone, $zone, $qclass, 'NSEC3PARAM');
 
     my $nsec3param_rr;
+    my $iterations = $parent->config->get( "params" )->{'NSEC3:ITERATIONS'} || 150;
     ($nsec3param_rr) = grep {$_->type eq 'NSEC3PARAM'} $nsec3p->answer if $nsec3p;
     if ($nsec3param_rr) {
         $logger->auto( 'DNSSEC:NSEC3PARAM_FOUND', $zone);
-        if ($nsec3param_rr->iterations >= 150) {
-            $logger->auto('DNSSEC:NSEC3_TOO_MANY_ITERATIONS', $zone, $nsec3param_rr->iterations);
+        if ($nsec3param_rr->iterations >= $iterations) {
+            $logger->auto('DNSSEC:NSEC3_TOO_MANY_ITERATIONS', $zone, $nsec3param_rr->iterations, $iterations);
         } else {
-            $logger->auto('DNSSEC:NSEC3_ITERATIONS_OK', $zone, $nsec3param_rr->iterations);
+            $logger->auto('DNSSEC:NSEC3_ITERATIONS_OK', $zone, $nsec3param_rr->iterations, $iterations);
         }
     } else {
         $logger->auto( 'DNSSEC:NSEC3PARAM_NOT_FOUND', $zone);
