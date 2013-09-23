@@ -500,7 +500,7 @@ sub min_packet_length {
     my ( $self, $topdomain, %data ) = @_;
 
     # Create a packet with an NS query for the given domain
-    my $p = Net::DNS::Packet->new( _max_length_name_for( '.' . $topdomain ), 'NS', 'IN' );
+    my $p = Net::DNS::Packet->new( _max_length_name_for( $topdomain ), 'NS', 'IN' );
 
     # Add NS records for all given nameservers to Authority section
     foreach my $name ( keys %data ) {

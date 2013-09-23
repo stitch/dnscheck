@@ -109,6 +109,6 @@ my %data = (
                                 '192.36.133.107'
                               ]
         );
-is($dc->delegation->min_packet_length('se', %data), 497, 'Minimum referral size');
+is($dc->delegation->min_packet_length('se', %data), 498, 'Minimum referral size');
 
 done_testing();
