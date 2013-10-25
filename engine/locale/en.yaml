@@ -785,6 +785,9 @@ messages:
   NAMESERVER:UDP_OK:
     args: 3
     format: Name server %s (%s) answers queries over UDP.
+  NAMESERVER:DNSCURVE:
+      args: 1
+      format: Nameserver name %s encodes a DNSCurve public key.
   NSTIME:AVERAGE:
     args: 7
     format: 'Zone %s, server %s: %s calls, %sms avg, %sms min, %sms max, %sms stddev.'

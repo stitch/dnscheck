@@ -187,6 +187,7 @@ loglevels:
   NAMESERVER:SKIPPED_IPV6: info
   NAMESERVER:TCP_OK: info
   NAMESERVER:UDP_OK: info
+  NAMESERVER:DNSCURVE: info
   SOA:BEGIN: info
   SOA:END: info
   SOA:EXPIRE_OK: info
