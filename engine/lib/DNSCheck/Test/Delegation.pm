@@ -52,7 +52,9 @@ sub test {
     return ( 0, 0 ) unless $parent->config->should_run;
 
     if ( !defined( $history ) && $parent->dbh ) {
-        $history = $parent->dbh->selectcol_arrayref( 'SELECT DISTINCT nameserver FROM delegation_history WHERE domain=?', undef, $zone );
+        $history =
+          $parent->dbh->selectcol_arrayref( 'SELECT DISTINCT nameserver FROM delegation_history WHERE domain=?',
+            undef, $zone );
     }
 
     my $qclass = $self->qclass;
@@ -176,14 +178,14 @@ sub consistent_glue {
         $logger->auto( "DELEGATION:MATCHING_GLUE", $g->name, $g->address );
 
         # make sure we only check in-zone-glue
-        unless ( $g->name =~ /$zone$/i or $g->name.'.' =~ /$zone$/i ) {
+        unless ( $g->name =~ /$zone$/i or $g->name . '.' =~ /$zone$/i ) {
             $logger->auto( "DELEGATION:GLUE_SKIPPED", $g->name, "out-of-zone", $zone );
             next;
         }
 
         my $c = $parent->dns->query_child( $zone, $g->name, $g->class, $g->type );
 
-        RETEST:
+      RETEST:
         if ( $c and $c->header->rcode eq "NOERROR" ) {
             ## got NOERROR, might be good or bad - dunno yet
 
@@ -191,8 +193,8 @@ sub consistent_glue {
                 ## got positive answer back, let's see if this makes any sense
 
                 # Not AUTH. Bad.
-                if ($c and not $c->header->aa) {
-                    $errors += $logger->auto('DELEGATION:CHILD_GLUE_NOT_AUTH', $zone, $g->name);
+                if ( $c and not $c->header->aa ) {
+                    $errors += $logger->auto( 'DELEGATION:CHILD_GLUE_NOT_AUTH', $zone, $g->name );
                     next;
                 }
 
@@ -206,16 +208,17 @@ sub consistent_glue {
                         $logger->auto( "DELEGATION:GLUE_FOUND_AT_CHILD", $zone, $g->name, $g->address );
                         $found++;
                     }
-                    elsif ($rr->type eq 'CNAME') {
-                        $errors += $logger->auto('DELEGATION:CHILD_GLUE_CNAME', $zone, $g->name);
+                    elsif ( $rr->type eq 'CNAME' ) {
+                        $errors += $logger->auto( 'DELEGATION:CHILD_GLUE_CNAME', $zone, $g->name );
                     }
-                    elsif ($rr->type eq 'DNAME') {
-                        $errors += $logger->auto('DELEGATION:CHILD_GLUE_DNAME', $zone, $g->name);
+                    elsif ( $rr->type eq 'DNAME' ) {
+                        $errors += $logger->auto( 'DELEGATION:CHILD_GLUE_DNAME', $zone, $g->name );
                     }
                 }
 
                 if ( not $found ) {
-                    $errors += $logger->auto( "DELEGATION:INCONSISTENT_GLUE", $g->name, join(',', map {$_->address} grep {$_->type eq $g->type} $c->answer) );
+                    $errors += $logger->auto( "DELEGATION:INCONSISTENT_GLUE",
+                        $g->name, join( ',', map { $_->address } grep { $_->type eq $g->type } $c->answer ) );
                 }
             }
             elsif ( scalar( $c->authority ) > 0 ) {
@@ -231,12 +234,13 @@ sub consistent_glue {
 
                 ## got NOERROR and NS in authority section -> referer
                 if ( $ns ) {
-                    $c = $self->parent->dns->query_resolver($g->name, $g->class, $g->type);
-                    if ($c) {
-                        $logger->auto('DELEGATION:GLUE_REFERRAL_FOLLOWED', $g->name);
+                    $c = $self->parent->dns->query_resolver( $g->name, $g->class, $g->type );
+                    if ( $c ) {
+                        $logger->auto( 'DELEGATION:GLUE_REFERRAL_FOLLOWED', $g->name );
                         goto RETEST;
-                    } else {
-                        $errors += $logger->auto('DELEGATION:GLUE_BROKEN_REFERRAL', $g->name);
+                    }
+                    else {
+                        $errors += $logger->auto( 'DELEGATION:GLUE_BROKEN_REFERRAL', $g->name );
                         next;
                     }
                 }
@@ -477,12 +481,13 @@ sub referral_size {
         $data{$nsname} = [ $self->parent->dns->find_addresses( $nsname, 'IN' ) ];
     }
 
-    my $min_size = $self->min_packet_length($zone, %data);
-    $self->parent->logger->auto('DELEGATION:MIN_REFERRAL_SIZE', $zone, $min_size);
+    my $min_size = $self->min_packet_length( $zone, %data );
+    $self->parent->logger->auto( 'DELEGATION:MIN_REFERRAL_SIZE', $zone, $min_size );
 
-    if ($min_size <= 512) {
+    if ( $min_size <= 512 ) {
         return $self->parent->logger->auto( 'DELEGATION:MIN_REFERRAL_SIZE_OK', $zone );
-    } else {
+    }
+    else {
         return $self->parent->logger->auto( 'DELEGATION:MIN_REFERRAL_SIZE_TOO_BIG', $zone, $min_size );
     }
 }
