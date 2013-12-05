@@ -176,18 +176,25 @@ sub consistent_glue {
         $logger->auto( "DELEGATION:MATCHING_GLUE", $g->name, $g->address );
 
         # make sure we only check in-zone-glue
-        unless ( $g->name =~ /$zone$/i ) {
-            $logger->auto( "DELEGATION:GLUE_SKIPPED", $g->name, "out-of-zone" );
+        unless ( $g->name =~ /$zone$/i or $g->name.'.' =~ /$zone$/i ) {
+            $logger->auto( "DELEGATION:GLUE_SKIPPED", $g->name, "out-of-zone", $zone );
             next;
         }
 
         my $c = $parent->dns->query_child( $zone, $g->name, $g->class, $g->type );
 
+        RETEST:
         if ( $c and $c->header->rcode eq "NOERROR" ) {
             ## got NOERROR, might be good or bad - dunno yet
 
             if ( scalar( $c->answer ) > 0 ) {
                 ## got positive answer back, let's see if this makes any sense
+
+                # Not AUTH. Bad.
+                if ($c and not $c->header->aa) {
+                    $errors += $logger->auto('DELEGATION:CHILD_GLUE_NOT_AUTH', $zone, $g->name);
+                    next;
+                }
 
                 my $found = 0;
                 foreach my $rr ( $c->answer ) {
@@ -199,10 +206,16 @@ sub consistent_glue {
                         $logger->auto( "DELEGATION:GLUE_FOUND_AT_CHILD", $zone, $g->name, $g->address );
                         $found++;
                     }
+                    elsif ($rr->type eq 'CNAME') {
+                        $errors += $logger->auto('DELEGATION:CHILD_GLUE_CNAME', $zone, $g->name);
+                    }
+                    elsif ($rr->type eq 'DNAME') {
+                        $errors += $logger->auto('DELEGATION:CHILD_GLUE_DNAME', $zone, $g->name);
+                    }
                 }
 
-                unless ( $found ) {
-                    $errors += $logger->auto( "DELEGATION:INCONSISTENT_GLUE", $g->name );
+                if ( not $found ) {
+                    $errors += $logger->auto( "DELEGATION:INCONSISTENT_GLUE", $g->name, join(',', map {$_->address} grep {$_->type eq $g->type} $c->answer) );
                 }
             }
             elsif ( scalar( $c->authority ) > 0 ) {
@@ -218,8 +231,14 @@ sub consistent_glue {
 
                 ## got NOERROR and NS in authority section -> referer
                 if ( $ns ) {
-                    $logger->auto( "DELEGATION:GLUE_SKIPPED", $g->name, "referer" );
-                    next;
+                    $c = $self->parent->dns->query_resolver($g->name, $g->class, $g->type);
+                    if ($c) {
+                        $logger->auto('DELEGATION:GLUE_REFERRAL_FOLLOWED', $g->name);
+                        goto RETEST;
+                    } else {
+                        $errors += $logger->auto('DELEGATION:GLUE_BROKEN_REFERRAL', $g->name);
+                        next;
+                    }
                 }
 
                 ## got NOERROR and SOA in authority section -> not found
@@ -231,24 +250,20 @@ sub consistent_glue {
         }
         elsif ( $c and $c->header->rcode eq "REFUSED" ) {
             ## got REFUSED, probably not authoritative
-            $logger->auto( "DELEGATION:GLUE_SKIPPED", $g->name, "refused" );
+            $logger->auto( "DELEGATION:GLUE_ERROR_AT_CHILD", $g->name, "refused" );
             next;
         }
         elsif ( $c and $c->header->rcode eq "SERVFAIL" ) {
             ## got SERVFAIL, most likely not authoritative
-            $logger->auto( "DELEGATION:GLUE_SKIPPED", $g->name, "servfail" );
+            $logger->auto( "DELEGATION:GLUE_ERROR_AT_CHILD", $g->name, "servfail" );
             next;
         }
         else {
             ## got something else, let's blame the user...
-            $errors += $logger->auto( "DELEGATION:GLUE_MISSING_AT_CHILD", $g->name );
+            $errors += $logger->auto( "DELEGATION:GLUE_ERROR_AT_CHILD", $g->name, 'unknown problem' );
             next;
         }
     }
-
-    # TODO: check for loop in glue record chain (i.e. unresolvable)
-
-    # TODO: warning if glue chain is longer than 3 lookups
 
     return $errors;
 }

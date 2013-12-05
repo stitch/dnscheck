@@ -185,6 +185,24 @@ messages:
   DELEGATION:MATCHING_GLUE:
     args: 2
     format: Checking glue for %s (%s).
+  DELEGATION:CHILD_GLUE_NOT_AUTH:
+      args: 2
+      format: "A nameserver for %s was not authoritative for %s."
+  DELEGATION:CHILD_GLUE_CNAME:
+      args: 2
+      format: "For the zone %s, the name %s was a CNAME alias"
+  DELEGATION:CHILD_GLUE_DNAME:
+      args: 2
+      format: "For the zone %s, the name %s was a DNAME alias"
+  DELEGATION:GLUE_REFERRAL_FOLLOWED:
+      args: 2
+      format: "DNSCheck followed a referral to find the address of %s."
+  DELEGATION:GLUE_BROKEN_REFERRAL:
+      args: 2
+      format: "Following the referral chain for %s failed."
+  DELEGATION:GLUE_ERROR_AT_CHILD:
+      args: 2
+      format: "Asking for the address for %s resulted in an error of type %s."
   DELEGATION:NOT_FOUND_AT_CHILD:
     args: 0
     descr: No name servers could be found at the child. This usually means that the child is not configured to answer queries about the zone.
