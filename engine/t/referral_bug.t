@@ -9,6 +9,11 @@ use_ok( 'DNSCheck' );
 my %tags;
 my @res;
 
+sub has {
+    my ( $tag ) = @_;
+    ok( $tags{$tag}, "has $tag" );
+}
+
 subtest referral_loop => sub {
     my $check = new DNSCheck( { configdir => './t/config' } );
     $check->add_fake_glue( 'test', 'a.ns.nic.test', '85.24.141.132' );
@@ -17,11 +22,6 @@ subtest referral_loop => sub {
 
     $res = $check->logger->export_hash;
     %tags = map { $_->{tag} => 1 } @$res;
-
-    sub has {
-        my ( $tag ) = @_;
-        ok( $tags{$tag}, "has $tag" );
-    }
 
     has( 'DELEGATION:GLUE_FOUND_AT_PARENT' );
     has( 'DELEGATION:GLUE_REFERRAL_FOLLOWED' );
@@ -37,11 +37,6 @@ subtest weird_but_ok => sub {
     $res = $check->logger->export_hash;
     %tags = map { $_->{tag} => 1 } @$res;
 
-    sub has {
-        my ( $tag ) = @_;
-        ok( $tags{$tag}, "has $tag" );
-    }
-
     has( 'DELEGATION:GLUE_FOUND_AT_PARENT' );
     has( 'DELEGATION:GLUE_FOUND_AT_CHILD' );
 };
@@ -54,11 +49,6 @@ subtest weird_and_broken => sub {
 
     $res = $check->logger->export_hash;
     %tags = map { $_->{tag} => 1 } @$res;
-
-    sub has {
-        my ( $tag ) = @_;
-        ok( $tags{$tag}, "has $tag" );
-    }
 
     has( 'DELEGATION:GLUE_FOUND_AT_PARENT' );
     has( 'DELEGATION:GLUE_ERROR_AT_CHILD' );
