@@ -184,6 +184,7 @@ sub consistent_glue {
         }
 
         my $c = $parent->dns->query_child( $zone, $g->name, $g->class, $g->type );
+        my $chain = {};
 
       RETEST:
         if ( $c and $c->header->rcode eq "NOERROR" ) {
@@ -234,7 +235,7 @@ sub consistent_glue {
 
                 ## got NOERROR and NS in authority section -> referer
                 if ( $ns ) {
-                    $c = $self->parent->dns->query_resolver( $g->name, $g->class, $g->type );
+                    $c = $self->follow_referral( $c, $g->name, $g->class, $g->type, $chain );
                     if ( $c ) {
                         $logger->auto( 'DELEGATION:GLUE_REFERRAL_FOLLOWED', $g->name );
                         goto RETEST;
@@ -556,6 +557,27 @@ sub min_packet_length {
     }
 
     return length( $p->data );
+}
+
+###
+### Helper method
+###
+
+sub follow_referral {
+    my ( $self, $packet, $name, $class, $type, $chain) = @_;
+
+    my %authority;
+    $authority{$_->name}{$_->address} = 1 for $packet->additional;
+
+    while (my ($k, $v) = each %authority) {
+        foreach my $addr (keys %$v) {
+            next if $chain->{$addr};
+            $chain->{$addr} = 1;
+            return $self->parent->dns->query_explicit($name, $class, $type, $addr);
+        }
+    }
+
+    return;
 }
 
 1;
