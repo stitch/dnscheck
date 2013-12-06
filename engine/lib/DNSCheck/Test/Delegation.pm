@@ -577,6 +577,16 @@ sub follow_referral {
         }
     }
 
+    foreach my $rr (grep {$_->type eq 'NS'} $packet->authority) {
+        my @addrs = $self->parent->dns->find_addresses($rr->nsdname, 'IN');
+        foreach my $addr (@addrs) {
+            next if $authority{$rr->nsdname}{$addr}; # We already tried this
+            next if $chain->{$addr};                 # Really, we tried this already!
+            $chain->{$addr} = 1;
+            return $self->parent->dns->query_explicit($name, $class, $type, $addr);
+        }
+    }
+
     return;
 }
 

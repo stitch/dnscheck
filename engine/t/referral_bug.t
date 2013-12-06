@@ -72,4 +72,23 @@ subtest has_cname => sub {
     has( 'DELEGATION:CHILD_GLUE_CNAME' );
 };
 
+subtest all_out_of_zone => sub {
+    my $check = new DNSCheck( { configdir => './t/config' } );
+    $check->add_fake_glue( 'iis.se', 'i.ns.se', '194.146.106.22' );
+    $check->add_fake_glue( 'iis.se', 'ns.nic.se', '212.247.7.228' );
+    $check->add_fake_glue( 'iis.se', 'ns3.nic.se', '212.247.8.152' );
+    $check->delegation->test( 'iis.se' );
+
+    $res = $check->logger->export_hash;
+    %tags = map { $_->{tag} => 1 } @$res;
+
+    sub has {
+        my ( $tag ) = @_;
+        ok( $tags{$tag}, "has $tag" );
+    }
+
+    has( 'DELEGATION:GLUE_FOUND_AT_PARENT' );
+    has( 'DELEGATION:GLUE_FOUND_AT_CHILD' );
+};
+
 done_testing;
