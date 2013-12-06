@@ -1,3 +1,9 @@
+libdnscheck-perl (1.5.3-1) precise; urgency=low
+
+  * New release. 
+
+ -- Calle Dybedahl <called@ubuntu>  Fri, 06 Dec 2013 03:31:04 -0800
+
 libdnscheck-perl (1.4.0-1) precise; urgency=low
 
   * DNSCheck release 1.4.0.
