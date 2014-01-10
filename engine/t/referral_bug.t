@@ -80,7 +80,7 @@ subtest all_out_of_zone => sub {
     %tags = map { $_->{tag} => 1 } @$res;
 
     has( 'DELEGATION:GLUE_FOUND_AT_PARENT' );
-    has( 'DELEGATION:GLUE_FOUND_AT_CHILD' );
+    has( 'DELEGATION:GLUE_SKIPPED' );
 };
 
 subtest no_additional => sub {

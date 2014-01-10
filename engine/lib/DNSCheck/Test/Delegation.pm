@@ -160,8 +160,7 @@ sub _get_glue {
 ################################################################
 
 sub consistent_glue {
-    my $self = shift;
-    my $zone = shift;
+    my ($self, $zone) = @_;
 
     my $parent = $self->parent;
     my $logger = $self->logger;
@@ -170,6 +169,7 @@ sub consistent_glue {
     return 0 unless $parent->config->should_run;
 
     my $errors = 0;
+    $zone =~ s/\.$//;
 
     # REQUIRE: check for inconsistent glue
     my @glue = _get_glue( $parent, $zone );
@@ -178,7 +178,9 @@ sub consistent_glue {
         $logger->auto( "DELEGATION:MATCHING_GLUE", $g->name, $g->address );
 
         # make sure we only check in-zone-glue
-        unless ( $g->name =~ /$zone$/i or $g->name . '.' =~ /$zone$/i ) {
+        my $gname = $g->name;
+        $gname =~ s/\.$//;
+        unless ( $g->name =~ /(^|\.)$zone$/i ) {
             $logger->auto( "DELEGATION:GLUE_SKIPPED", $g->name, "out-of-zone", $zone );
             next;
         }
