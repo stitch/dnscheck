@@ -666,6 +666,10 @@ messages:
     args: 2
     descr: 'The hostname is not syntactially correct according to RFC 952.  A common error is to begin the hostname with a non-letter (a-z) or use invalid characters (only a-z, 0-9 and - are allowed).'
     format: Host name %s is illegal (syntax error at %s)
+  HOST:RESERVED_DOMAIN:
+      args: 2
+      format: Name %s is in reserved domain %s.
+      descr: RFC 6761 specifies a number of domains which may not be used on the larger Internet.
   HOST:NOT_FOUND:
     args: 1
     descr: No IPv4 or IPv6 address was found for the host name.
