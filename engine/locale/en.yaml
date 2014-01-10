@@ -99,6 +99,9 @@ messages:
     args: 0
     descr: "The zone's name servers are all located within the same, (or no), autonomous system."
     format: Zone announced by fewer than two IPv6 ASN.
+  CONNECTIVITY:RESERVED_AS:
+      args: 2
+      format: Zone %s has a nameserver announced from reserved AS %s.
   CONSISTENCY:BEGIN:
     args: 1
     format: Begin testing zone consistency for %s.
