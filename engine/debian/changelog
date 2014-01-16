@@ -1,3 +1,9 @@
+libdnscheck-perl (1.6.0-1) precise; urgency=low
+
+  * DNSCheck release 1.6.0.
+
+ -- Calle Dybedahl <calle@init.se>  Thu, 16 Jan 2014 12:28:00 +0100
+
 libdnscheck-perl (1.5.3-1) precise; urgency=low
 
   * New release. 

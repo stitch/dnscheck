@@ -1,3 +1,24 @@
+Release Notes for DNSCheck Lib v1.6.0
+=====================================
+
+* Recognizes all DNSKEY algorithms currently registered by IANA.
+
+* Logger can be configured to run a callback in user code when a new message is logged.
+
+* Detects zones using DNSCurve encryption.
+
+* Glue tests much improved.
+
+* Hostname check now detects use of reserved domain names according to RFC 6761.
+
+* The default configuration now uses an ASN lookup service hosted by .SE rather than the one hosted by Team Cymru (the ASN data still comes from Team Cymru, .SE just provides the lookup service).
+
+* ASN check now logs a message if it sees a reserved AS number in use.
+
+* Bugfixes, of course.
+
+* Tested with Perl versions 5.10.1, 5.12.5, 5.14.4, 5.16.3 and 5.18.2.
+
 Release Notes for DNSCheck Lib v1.4.0
 =====================================
 
