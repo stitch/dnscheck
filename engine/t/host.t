@@ -37,6 +37,13 @@ SKIP: {
 
     $ht->test_reserved('foobar.local');
     ok( (grep {$_->[3] eq 'HOST:RESERVED_DOMAIN'} @{$ht->logger->export})==1, 'Reserved domain detected' );
+
+    $ht->logger->clear;
+    $ht->host_syntax('xn--foo.bar');
+    ok( (grep {$_->[3] eq 'HOST:DISCOURAGED_NAME'} @{$ht->logger->export})==0, 'No discouraged name detected' );
+
+    $ht->host_syntax('qq--foo.bar');
+    ok( (grep {$_->[3] eq 'HOST:DISCOURAGED_NAME'} @{$ht->logger->export})==1, 'Discouraged name detected' );
 }
 
 done_testing;

@@ -673,6 +673,9 @@ messages:
       args: 2
       format: Name %s is in reserved domain %s.
       descr: RFC 6761 specifies a number of domains which may not be used on the larger Internet.
+  HOST:DISCOURAGED_NAME:
+    args: 1
+    format: "The name %s is discouraged by RFC3696, since double-dashes may become extension syntax in the future."
   HOST:NOT_FOUND:
     args: 1
     descr: No IPv4 or IPv6 address was found for the host name.

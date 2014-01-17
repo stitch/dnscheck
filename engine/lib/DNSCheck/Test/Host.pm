@@ -180,6 +180,13 @@ sub host_syntax {
         return $self->logger->auto( "HOST:ILLEGAL_NAME", $hostname, "Top all-numeric" );
     }
 
+    foreach my $label (@labels) {
+        if ($label =~ /^[^x][^n]\-\-/) {
+            return $self->logger->auto( 'HOST:DISCOURAGED_NAME', $hostname )
+        }
+    }
+
+
     return 0;
 }
 

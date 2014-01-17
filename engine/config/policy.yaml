@@ -160,6 +160,7 @@ loglevels:
   HOST:END: info
   HOST:ILLEGAL_NAME: error
   HOST:RESERVED_DOMAIN: warning
+  HOST:DISCOURAGED_NAME: warning
   HOST:NOT_FOUND: error
   MAIL:ADDRESS_SYNTAX: error 
   MAIL:BEGIN: info
