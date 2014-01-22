@@ -190,6 +190,10 @@ Check that the SOA records retrieved from all nameservers for the zone contain
 the same information (that is, the same serial number and the same timeout
 values).
 
+=item ->test_nssets($zone)
+
+Checks that all child nameservers for the zone gives the same NS RRset.
+
 =back
 
 =head1 EXAMPLES

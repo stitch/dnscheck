@@ -233,6 +233,10 @@ Test specifically for IPv4.
 
 Test specifically for IPv6.
 
+=item ->test_as_diversity($zone, $ipversion)
+
+This is a method that implements the parts of AS diversity testing that is largely common between the IP protocol versions.
+
 =back
 
 =head1 EXAMPLES

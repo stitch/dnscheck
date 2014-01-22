@@ -465,6 +465,11 @@ will be used instead of what can be found live in DNS (if any). If an IP
 address is provided, it will be used. If not, an attempt to look up addresses
 for the name will be made. If that attempt fails, the name will be ignored.
 
+=item ->add_fake_ds($dsstring)
+
+Add a "fake" DS record to be used for DNSSEC tests during an undelegated test.
+The argument given must be a DS record in zone file format.
+
 =item ->undelegated_test()
 
 This method returns true of any "fake" glue information has been provided.

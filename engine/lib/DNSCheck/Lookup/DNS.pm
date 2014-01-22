@@ -1157,6 +1157,8 @@ Send a query to the default resolver(s). This will be a L<DNSCheck::Lookup::Reso
 
 =item my $bool = $dns->address_is_authoritative(I<address>, I<qname>, I<qtype>);
 
+=item my $bool = $dns->address_is_authoritative_tcp(I<address>, I<qname>, I<qtype>);
+
 =item my $bool = $dns->address_is_recursive(I<address>, I<qclass>);
 
 =item my $bool = $dns->check_axfr(I<address>, I<qname>, I<qclass>);

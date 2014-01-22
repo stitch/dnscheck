@@ -675,6 +675,10 @@ Takes the name of a zone and data about its nameservers, and returns the size in
 be built from the data given a query for a maximally long name. The C<%nsdata> hash should have nameservers names as keys, and references to
 lists of strings with IP addresses (v4 and v6) as values.
 
+=item follow_referral()
+
+Internal helper method.
+
 =back
 
 Where nothing else is said, all methods return the total number of errors

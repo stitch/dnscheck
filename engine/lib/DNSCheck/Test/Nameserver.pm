@@ -458,6 +458,10 @@ Test if the given server can be queried via TCP.
 
 Test if the given server allows transfer of the given zone.
 
+=item ->same_source($address)
+
+Checks that queries sent to a given address gets responses coming from the same address.
+
 =back
 
 =head1 SEE ALSO
