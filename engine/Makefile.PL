@@ -40,7 +40,7 @@ WriteMakefile(
         'File::ShareDir'          => 0,
         'Config::Any'             => 0,
         'YAML::XS'                => 0,
-        'List::MoreUtils'         => 0,
+        'List::MoreUtils'         => 0.28,
     },
     'EXE_FILES' => \@exefiles,
     'NO_META'   => 1,
