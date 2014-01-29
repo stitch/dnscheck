@@ -38,6 +38,7 @@ use utf8;
 use Time::HiRes qw(time);
 use DNSCheck::Locale;
 use Carp;
+use List::MoreUtils qw[all pairwise];
 
 ######################################################################
 
@@ -187,21 +188,14 @@ sub add {
 
 sub check_filters {
     my ( $self, $normal_level, $tag, @args ) = @_;
+    no warnings 'uninitialized';
 
     if ( $self->{filters}{$tag} ) {
         foreach my $f_data ( @{ $self->{filters}{$tag} } ) {
-
             my @f_args = @{ $f_data->{args} };
             my @s_args = splice( @args, 0, scalar( @f_args ) );
 
-            while ( @f_args ) {
-                my $f = shift( @f_args );
-                my $s = shift( @s_args );
-                if ( $f ne $s ) {
-                    return $normal_level;
-                }
-            }
-            return $f_data->{level};
+            return $f_data->{level} if all {$_} pairwise {$a cmp $b} @f_args, @s_args;
         }
     }
 
