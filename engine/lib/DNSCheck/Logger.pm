@@ -193,7 +193,7 @@ sub check_filters {
     if ( $self->{filters}{$tag} ) {
         foreach my $f_data ( @{ $self->{filters}{$tag} } ) {
             my @f_args = @{ $f_data->{args} };
-            my @s_args = @args[0..scalar( @f_args )];
+            my @s_args = @args[0..$#f_args];
             return $f_data->{level} if all {$_} pairwise {$a eq $b} @f_args, @s_args;
         }
     }
