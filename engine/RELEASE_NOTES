@@ -1,3 +1,10 @@
+Release Notes for DNSCheck Lib v1.6.2
+=====================================
+
+* Several bugfixes.
+
+* Adds test for labels of the form "yy--something" where the first two characters are not "xn".
+
 Release Notes for DNSCheck Lib v1.6.0
 =====================================
 
