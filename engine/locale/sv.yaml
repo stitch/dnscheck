@@ -4,7 +4,7 @@ locale_name: Svenska
 messages:
   ADDRESS:BEGIN:
     args: 1
-    format: Börjar testa åäö adressen %s.
+    format: Börjar testa adressen %s.
   ADDRESS:END:
     args: 1
     format: Klar med test av adressen %s.
@@ -99,6 +99,9 @@ messages:
     args: 0
     descr: 'Samtliga DNS-servrar för zonen finns inom samma, (eller inget), autonoma system.'
     format: Zon annonserad av mindre än 2 IPv6 ASN.
+  CONNECTIVITY:RESERVED_AS:
+    args: 2
+    format: Zone %s has a nameserver announced from reserved AS %s.
   CONSISTENCY:BEGIN:
     args: 1
     format: Börjar testa att zonen är konsekvent uppsatt för %s.
@@ -185,6 +188,24 @@ messages:
   DELEGATION:MATCHING_GLUE:
     args: 2
     format: Kontrollerar glue för %s (%s).
+  DELEGATION:CHILD_GLUE_NOT_AUTH:
+    args: 2
+    format: "A nameserver for %s was not authoritative for %s."
+  DELEGATION:CHILD_GLUE_CNAME:
+    args: 2
+    format: "For the zone %s, the name %s was a CNAME alias"
+  DELEGATION:CHILD_GLUE_DNAME:
+    args: 2
+    format: "For the zone %s, the name %s was a DNAME alias"
+  DELEGATION:GLUE_REFERRAL_FOLLOWED:
+    args: 2
+    format: "DNSCheck followed a referral to find the address of %s."
+  DELEGATION:GLUE_BROKEN_REFERRAL:
+    args: 2
+    format: "Following the referral chain for %s failed."
+  DELEGATION:GLUE_ERROR_AT_CHILD:
+    args: 2
+    format: "Asking for the address for %s resulted in an error of type %s." 
   DELEGATION:NOT_FOUND_AT_CHILD:
     args: 0
     descr: Inga DNS-servrar hittades hos barnet. Det här betyder vanligtvis att barnet inte är konfigurerat att svara på frågor om zonen.
@@ -203,6 +224,12 @@ messages:
   DELEGATION:NO_NS_IPV6:
     args: 0
     format: Inga IPv6 DNS-servrar hittades.
+  DELEGATION:MIN_REFERRAL_SIZE_OK:
+    args: 1
+    format: "It is possible to build a referral packet for %s that works without EDNS0."
+  DELEGATION:MIN_REFERRAL_SIZE_TOO_BIG:
+    args: 2
+    format: "The smallest referral packet we could build for %s was %s bytes, which requires EDNS0 and will not work with old resolvers."
   DELEGATION:NS_AT_CHILD:
     args: 1
     descr: Detta är listan med DNS-servrar som är listade i barnzonen. Den måste innehålla samtliga DNS-servrar som är listade i föräldrazonen.
@@ -589,6 +616,33 @@ messages:
   DNSSEC:SOA_VALID_SIGNATURES:
     args: 1
     format: Tillräckligt med godkända signaturer över SOA RRset hittade för %s.
+  DNSSEC:NSEC3PARAM_FOUND:
+      args: 1
+      format: NSEC3PARAM record found for %s.
+  DNSSEC:NSEC3_TOO_MANY_ITERATIONS:
+      args: 3
+      format: "NSEC3 for %s is set to use %s iterations, which is higher than the limit of %s."
+  DNSSEC:NSEC3_ITERATIONS_OK:
+      args: 3
+      format: "NSEC3 for %s is set to use %s iterations, which is less than %s and thus OK."
+  DNSSEC:NSEC3PARAM_NOT_FOUND:
+      args: 1
+      format: NSEC3PARAM record was not found for %s.
+  DNSSEC:NSEC_NOT_FOUND:
+      args: 1
+      format: "Authenticated denial records not found for %s."
+  DNSSEC:NSEC_FOUND:
+      args: 2
+      format: "Authenticated denial records found for %s, of type %s."
+  DNSSEC:RRSIG_SHORT_DURATION:
+      args: 2
+      format: "Duration for %s is too short (%s seconds)."
+  DNSSEC:RRSIG_LONG_DURATION:
+      args: 2
+      format: "Duration for %s is too long (%s seconds)."
+  DNSSEC:RRSIG_OK_DURATION:
+      args: 2
+      format: "Duration for %s is OK (%s seconds)."
   ENGINE:CRASH:
     args: 0
     format: DNSCheck-motorn kraschade.
@@ -608,6 +662,13 @@ messages:
     args: 1
     descr: 'Värdnamnet är ett alias (CNAME), vilket inte är tillåtet. Värdnamn måste publiceras med en A- eller AAAA-pekare.'
     format: Värdnamnet %s hänvisar till ett CNAME.
+  HOST:RESERVED_DOMAIN:
+    args: 2
+    format: Name %s is in reserved domain %s.
+    descr: RFC 6761 specifies a number of domains which may not be used on the larger Internet.
+  HOST:DISCOURAGED_NAME:
+    args: 1
+    format: "The name %s is discouraged by RFC3696, since double-dashes may become extension syntax in the future."
   HOST:END:
     args: 1
     format: Klar med test av värdnamnet %s.
@@ -704,6 +765,12 @@ messages:
     args: 3
     descr: 'DNS-servern svarar inte auktoritativt på anrop för den testade domänen. Det beror troligtvis på en felkonfigurering, vanligtvis så har DNS-servern inte ställts in för att agera server för den testade domänen.'
     format: DNS-servern %s (%s) är inte auktoritativ för %s.
+  NAMESERVER:NOT_AUTH_UDP:
+    args: 1
+    format: 'Nameserver at %s is not authoritative over UDP.'
+  NAMESERVER:NOT_AUTH_TCP:
+    args: 1
+    format: 'Nameserver at %s is not authoritative over TCP.'
   NAMESERVER:NOT_RECURSIVE:
     args: 2
     format: DNS-servern %s (%s) är inte rekursiv.
@@ -746,6 +813,9 @@ messages:
   NAMESERVER:UDP_OK:
     args: 3
     format: DNS-servern %s (%s) svarar på anrop via UDP.
+  NAMESERVER:DNSCURVE:
+    args: 1
+    format: Nameserver name %s encodes a DNSCurve public key.
   NSTIME:AVERAGE:
     args: 7
     format: 'Zon %s, server %s: %s anrop, %sms medel, %sms min, %sms max, %sms standardavvikelse.'
