@@ -4,7 +4,7 @@ locale_name: Svenska
 messages:
   ADDRESS:BEGIN:
     args: 1
-    format: Börjar testa adressen %s.
+    format: Börjar testa åäö adressen %s.
   ADDRESS:END:
     args: 1
     format: Klar med test av adressen %s.
