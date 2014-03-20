@@ -162,9 +162,9 @@ loglevels:
   HOST:RESERVED_DOMAIN: warning
   HOST:DISCOURAGED_NAME: warning
   HOST:NOT_FOUND: error
-  MAIL:ADDRESS_SYNTAX: error 
+  MAIL:ADDRESS_SYNTAX: warning 
   MAIL:BEGIN: info
-  MAIL:DOMAIN_NOT_FOUND: error 
+  MAIL:DOMAIN_NOT_FOUND: warning 
   MAIL:END: info
   MAIL:HOST_ERROR: notice 
   MAIL:IPV6_ONLY: notice 
