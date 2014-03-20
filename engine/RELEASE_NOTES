@@ -1,3 +1,14 @@
+Release Notes for DNSCheck Lib v1.6.3
+=====================================
+
+* Swedish translations of new messages.
+
+* Debian packaging fixes.
+
+* Raise required version of Net::DNS and Net::DNS::SEC.
+
+* Small bugfix contributed by Anand.
+
 Release Notes for DNSCheck Lib v1.6.2
 =====================================
 
