@@ -40,6 +40,19 @@ use Carp;
 use List::Util qw[reduce max min];
 use Net::DNS;
 use Net::DNS::RR;
+
+BEGIN {
+    # Monkey-patch in backwards compatibility that the Net::DNS maintainers
+    # didn't think was necessary.
+    if ($Net::DNS::VERSION < 0.75) {
+        no warnings 'redefine';
+        *Net::DNS::RR::DNSKEY::sep = sub {
+            my ($self, @args) = @_;
+            return $self->is_sep(@args);
+        };
+    }
+}
+
 use Storable qw[thaw];
 use MIME::Base64;
 
@@ -60,7 +73,7 @@ use DNSCheck::Lookup::Resolver;
 use DNSCheck::Lookup::ASN;
 use DNSCheck::Logger;
 
-our $VERSION = "1.6.3";
+our $VERSION = "1.6.4";
 
 ######################################################################
 
