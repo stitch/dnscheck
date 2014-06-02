@@ -113,7 +113,6 @@ sub test {
     foreach my $rr ( @answers ) {
         if ( $rr->type eq "CNAME" ) {
             $errors += $logger->auto( "HOST:CNAME_FOUND", $hostname );
-            goto DONE;
         }
     }
 
@@ -122,7 +121,6 @@ sub test {
         if ( $rr->type eq "A" or $rr->type eq "AAAA" ) {
             if ( my $tmp = $parent->address->test( $rr->address ) ) {
                 $errors += $tmp;
-                goto DONE;
             }
         }
     }
