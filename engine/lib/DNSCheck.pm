@@ -42,8 +42,7 @@ use Net::DNS;
 use Net::DNS::RR;
 
 BEGIN {
-    # Monkey-patch in backwards compatibility that the Net::DNS maintainers
-    # didn't think was necessary.
+    # Monkey-patch in backwards compatibility that the Net::DNS maintainers forgot
     if ($Net::DNS::VERSION < 0.75) {
         no warnings 'redefine';
         *Net::DNS::RR::DNSKEY::sep = sub {
@@ -73,7 +72,7 @@ use DNSCheck::Lookup::Resolver;
 use DNSCheck::Lookup::ASN;
 use DNSCheck::Logger;
 
-our $VERSION = "1.6.4";
+our $VERSION = "1.6.5";
 
 ######################################################################
 
