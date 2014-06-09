@@ -904,11 +904,6 @@ sub check_axfr {
     my $qclass  = shift;
     my $timeout;
 
-    if ($Net::DNS::VERSION == 0.75 or $Net::DNS::VERSION == 0.76) {
-        $self->logger->auto( 'DNS:AXFR_TEST_UNAVAILABLE', $Net::DNS::VERSION );
-        return 1; # Be nice and report success when we couldn't test.
-    }
-
     eval { $timeout = $self->parent->config->get( 'dns' )->{tcp_timeout} };
     $timeout //= 60;
 

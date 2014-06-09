@@ -34,6 +34,7 @@ require 5.010001;
 use warnings;
 use strict;
 use utf8;
+use version;
 
 use base 'DNSCheck::Test::Common';
 
@@ -47,7 +48,7 @@ use Net::DNS;
 ###
 
 BEGIN {
-    if ($Net::DNS::VERSION > 0.68) {
+    if (version->parse($Net::DNS::VERSION) > version->parse(0.68)) {
         require Net::DNS::Mailbox;
         no warnings 'redefine';
         *Net::DNS::Mailbox::address = sub {

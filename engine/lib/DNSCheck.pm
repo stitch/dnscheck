@@ -41,17 +41,6 @@ use List::Util qw[reduce max min];
 use Net::DNS;
 use Net::DNS::RR;
 
-BEGIN {
-    # Monkey-patch in backwards compatibility that the Net::DNS maintainers forgot
-    if ($Net::DNS::VERSION < 0.75) {
-        no warnings 'redefine';
-        *Net::DNS::RR::DNSKEY::sep = sub {
-            my ($self, @args) = @_;
-            return $self->is_sep(@args);
-        };
-    }
-}
-
 use Storable qw[thaw];
 use MIME::Base64;
 

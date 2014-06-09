@@ -309,7 +309,7 @@ sub _check_child {
 
         $keyhash{ $key->keytag } = $key;
 
-        if ( $key->sep ) {
+        if ( $key->is_sep ) {
             $logger->auto( "DNSSEC:DNSKEY_SEP", $zone, $key->keytag );
             push @{ $result{sep} }, $key->keytag;
             $sep++;
