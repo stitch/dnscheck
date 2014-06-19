@@ -70,8 +70,8 @@ sub test {
         goto DONE;
     }
 
-    my @ns_at_child = $parent->dns->get_nameservers_at_child( $zone, $qclass );
-    my @ns_at_parent = $parent->dns->get_nameservers_at_parent( $zone, $qclass );
+    my @ns_at_child = map {lc($_)} $parent->dns->get_nameservers_at_child( $zone, $qclass );
+    my @ns_at_parent = map {lc($_)} $parent->dns->get_nameservers_at_parent( $zone, $qclass );
 
     unless ( $ns_at_child[0] and $ns_at_parent[0]) {
 
