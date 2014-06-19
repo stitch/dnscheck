@@ -1,3 +1,14 @@
+Release Notes for DNSCheck Lib v1.6.5
+=====================================
+
+* Further adaptation to new versions of Net::DNS and Net::DNS::SEC. As of this version, Makefile.PL will complain and refuse to run if it sees a Net::DNS or Net::DNS::SEC version known to be too problematic to use.
+
+* The list of reserved IP address ranges have had two IPv6 ranges that were returned to IANA removed, and 6to4 addresses have been reclassified from reserved to discouraged.
+
+* In some cases DNSCheck will provide more diagnostics when there are multiple problems with adresses for MX records.
+
+* When determining which nameserver names to test, case differences will no longer cause the same server to be tested repeatedly.
+
 Release Notes for DNSCheck Lib v1.6.4
 =====================================
 
