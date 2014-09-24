@@ -88,7 +88,7 @@ sub test {
 
             my $serial = $rr->serial;
 
-            my $digest = sha1_hex( join( ':', $rr->mname, $rr->rname, $rr->refresh, $rr->retry, $rr->expire, $rr->minimum ) );
+            my $digest = sha1_hex( join( ':', uc($rr->mname), uc($rr->rname), $rr->refresh, $rr->retry, $rr->expire, $rr->minimum ) );
 
             $logger->auto( "CONSISTENCY:SOA_SERIAL_AT_ADDRESS", $address, $serial );
             $logger->auto( "CONSISTENCY:SOA_DIGEST_AT_ADDRESS", $address, $digest );
