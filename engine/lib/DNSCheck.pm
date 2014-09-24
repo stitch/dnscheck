@@ -61,7 +61,7 @@ use DNSCheck::Lookup::Resolver;
 use DNSCheck::Lookup::ASN;
 use DNSCheck::Logger;
 
-our $VERSION = "1.6.5";
+our $VERSION = "1.6.6";
 
 ######################################################################
 
