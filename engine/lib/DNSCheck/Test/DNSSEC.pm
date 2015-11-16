@@ -598,8 +598,8 @@ sub check_algorithm {
     #    10  => RSA/SHA-512
     #    11  => Unassigned
     #    12  => GOST R 34.10-2001
-	#    13  => ECDSA Curve P-256 with SHA-256
-	#    14  => ECDSA Curve P-384 with SHA-384
+    #    13  => ECDSA Curve P-256 with SHA-256
+    #    14  => ECDSA Curve P-384 with SHA-384
     #    15-122 => Unassigned
     #    123-251 => Reserved
     #    252 => Reserved (Indirect keys)
