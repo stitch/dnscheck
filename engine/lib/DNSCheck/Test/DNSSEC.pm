@@ -598,7 +598,9 @@ sub check_algorithm {
     #    10  => RSA/SHA-512
     #    11  => Unassigned
     #    12  => GOST R 34.10-2001
-    #    13-122 => Unassigned
+	#    13  => ECDSA Curve P-256 with SHA-256
+	#    14  => ECDSA Curve P-384 with SHA-384
+    #    15-122 => Unassigned
     #    123-251 => Reserved
     #    252 => Reserved (Indirect keys)
     #    253 => Private algorithm (domain name)
@@ -608,7 +610,7 @@ sub check_algorithm {
     if ( $aid == 0 or $aid == 4 or ( $aid >= 123 and $aid <= 252 ) or $aid == 255 ) {
         return $logger->auto( 'DNSSEC:ALGORITHM_RESERVED', $aid );
     }
-    elsif ( $aid == 9 or $aid == 11 or ( $aid >= 13 and $aid <= 122 ) ) {
+    elsif ( $aid == 9 or $aid == 11 or ( $aid >= 15 and $aid <= 122 ) ) {
         return $logger->auto( 'DNSSEC:ALGORITHM_UNASSIGNED', $aid );
     }
     elsif ( $aid == 253 or $aid == 254 ) {
