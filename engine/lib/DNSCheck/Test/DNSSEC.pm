@@ -47,7 +47,7 @@ sub algorithm_name {
     my $aid   = shift;
     my %names = (
         0   => 'Reserved (0)',
-        1   => 'RSA/MD5',
+        1   => 'RSA/MD5', # deprecated
         2   => 'Diffie-Hellman',
         3   => 'DSA/SHA1',
         4   => 'Reserved (ECC)',
@@ -586,7 +586,7 @@ sub check_algorithm {
     my $aid    = shift;
 
     #    0   => Reserved
-    #    1   => RSA/MD5
+    #    1   => RSA/MD5 (deprecated)
     #    2   => Diffie-Hellman
     #    3   => DSA/SHA1
     #    4   => Reserved (ECC)
@@ -607,7 +607,10 @@ sub check_algorithm {
     #    254 => Private algorithm (OID)
     #    255 => Reserved
 
-    if ( $aid == 0 or $aid == 4 or ( $aid >= 123 and $aid <= 252 ) or $aid == 255 ) {
+    if ( $aid == 1 ) {
+        return $logger->auto( 'DNSSEC:ALGORITHM_DEPRECATED', $aid );
+    }
+    elsif ( $aid == 0 or $aid == 4 or ( $aid >= 123 and $aid <= 252 ) or $aid == 255 ) {
         return $logger->auto( 'DNSSEC:ALGORITHM_RESERVED', $aid );
     }
     elsif ( $aid == 9 or $aid == 11 or ( $aid >= 15 and $aid <= 122 ) ) {
